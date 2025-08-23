@@ -1,0 +1,33 @@
+
+
+flutter clean
+
+flutter pub get
+
+flutter build apk
+
+
+flutter build windows
+
+# Android（需连接设备或启动模拟器）
+flutter run -d android
+
+flutter run -d windows
+
+
+git action 配置 Secrets
+
+RELEASE_TOKEN： github获取token
+OASX_RELEASE： release
+WINDOWS_PATH_VALUES： release
+WINDOWS_PATH_KEY： assets/release.txt
+
+KEYSTORE_PASWORD： oasx-password
+KEY_PASSWORD： oasx-password
+KEY_ALIAS： upload
+WINDOWS_PATH_KEY： ./assets/release.txt
+WINDOWS_PATH_VALUES： release
+RELEASE_TOKEN： 自己github的token了
+
+set PUB_HOSTED_URL=https://pub.flutter-io.cn
+set FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
