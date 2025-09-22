@@ -293,11 +293,18 @@ class LogContent extends StatelessWidget {
         ),
         suffixInlineSpan: TextSpan(
           style: TextStyle(fontFeatures: [FontFeature.tabularFigures()]),
-          text: '      ',
+          text: '   ',
         ),
       ),
       const EasyRichTextPattern(
         targetString: 'WARNING',
+        style: TextStyle(
+          color: Colors.yellow,
+          fontFeatures: [FontFeature.tabularFigures()],
+        ),
+      ),
+      const EasyRichTextPattern(
+        targetString: 'WARN',
         style: TextStyle(
           color: Colors.yellow,
           fontFeatures: [FontFeature.tabularFigures()],
