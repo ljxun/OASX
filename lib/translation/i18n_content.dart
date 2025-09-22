@@ -28,7 +28,7 @@ class I18n {
   static const String running = 'Running';
   static const String pending = 'Pendings';
   static const String waiting = 'Waitings';
-  static const String task_setting = 'Task Setting';
+  static const String task_setting = 'Setting';
   static const String log = 'Log';
   static const String clear_log = 'Clear Log';
   static const String login = 'Login';
@@ -153,8 +153,20 @@ class I18n {
   static const String activity_shikigami = 'ActivityShikigami';
   static const String meta_demon = 'MetaDemon';
   static const String memory_scrolls = 'MemoryScrolls';
+  static const String activity_common = 'ActivityCommon';
+  static const String activity_common_2 = 'ActivityCommon2';
+  static const String auto_cake = 'AutoCake';
+  static const String nian_true = 'NianTrue';
   static const String demon_retreat = 'DemonRetreat';
   static const String dye_trials = 'DyeTrials';
+  static const String switch_account = 'SwitchAccount';
+  static const String switch_account_config = 'SwitchAccountConfig';
+  static const String switch_account_once = 'SwitchAccountOnce';
+  static const String switch_account_loop = 'SwitchAccountLoop';
+  static const String main_story = 'MainStory';
+  static const String back_up = 'BackUp';
+  static const String other = 'other';
+
   // script 脚本配置
   static const String device = 'device';
   static const String error = 'error';
