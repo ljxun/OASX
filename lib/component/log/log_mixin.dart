@@ -7,7 +7,7 @@ import 'package:oasx/translation/i18n_content.dart';
 
 mixin LogMixin on GetxController {
   /// max lines to store in log
-  int get maxLines => 200;
+  int get maxLines => 800;
 
   /// max logs+pending
   int get maxBuffer => 1000;
