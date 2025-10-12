@@ -78,7 +78,7 @@ class ServerController extends GetxController with LogMixin {
     return true;
   }
 
-  String get pathGit => '${rootPathServer.value}\\toolkit\\Git\\mingw64\\bin"';
+  String get pathGit => '${rootPathServer.value}\\toolkit\\Git\\mingw64\\bin';
   String get pathPython => '${rootPathServer.value}\\toolkit';
   String get pathAdb =>
       '${rootPathServer.value}\\toolkit\\Lib\\site-packages\\adbutils\\binaries';
@@ -111,16 +111,11 @@ class ServerController extends GetxController with LogMixin {
     }
     clearLog();
     shell!.kill();
-    await runShell('echo OAS working directory: ');
-    await runShell('pwd');
-    printInfo(info: 'kill pythonw');
-    await runShell('taskkill /f /t /im pythonw.exe');
-    printInfo(info: 'kill pythonw finished');
-    printInfo(info: 'start deploy');
-    await runShell('python -m deploy.installer');
-    printInfo(info: 'start deploy finished');
-    await runShell('echo Start OAS');
-    printInfo(info: 'start server');
+    await runShell('echo pathGit: $pathGit'); // 打印 pathGit 参数
+    await runShell('echo pathPython: $pathPython'); // 打印 pathPython 参数
+    await runShell('echo pathAdb: $pathAdb'); // 打印 pathAdb 参数
+    await runShell('echo pathScripts: $pathScripts'); // 打印 pathScripts 参数
+    await runShell('.\\toolkit\\python.exe -m deploy.killOAS');
     // 非阻塞启动web服务
     runShell(".\\toolkit\\pythonw.exe  server.py");
     if (!autoLoginAfterDeploy.value) {
