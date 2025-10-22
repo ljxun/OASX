@@ -58,12 +58,22 @@ mixin LogMixin on GetxController {
     super.onClose();
   }
 
+  // void _removeUIOldLogs() {
+  //   // 非自动滚动状态下,且未溢出(已删除溢出部分),则不删除旧日志,使用户可以停留
+  //   if (!autoScroll.value) return;
+  //   // UI 限制：只保留最新 maxLines 行
+  //   if (logs.length > maxLines) {
+  //     logs.removeRange(0, logs.length - maxLines);
+  //   }
+  // }
+
   void _removeUIOldLogs() {
     // 非自动滚动状态下,且未溢出(已删除溢出部分),则不删除旧日志,使用户可以停留
     if (!autoScroll.value) return;
-    // UI 限制：只保留最新 maxLines 行
+    // UI 限制：当日志超过 maxLines 时，删除一半日志
     if (logs.length > maxLines) {
-      logs.removeRange(0, logs.length - maxLines);
+      int removeCount = (logs.length / 2).floor();
+      logs.removeRange(0, removeCount);
     }
   }
 
