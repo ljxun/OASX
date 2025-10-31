@@ -115,7 +115,7 @@ class ServerController extends GetxController with LogMixin {
     await runShell('echo pathPython: $pathPython'); // 打印 pathPython 参数
     await runShell('echo pathAdb: $pathAdb'); // 打印 pathAdb 参数
     await runShell('echo pathScripts: $pathScripts'); // 打印 pathScripts 参数
-    await runShell('.\\toolkit\\python.exe -m deploy.killOAS');
+    // await runShell('.\\toolkit\\python.exe -m deploy.killOAS');
     // 非阻塞启动web服务
     runShell(".\\toolkit\\pythonw.exe  server.py");
     if (!autoLoginAfterDeploy.value) {
