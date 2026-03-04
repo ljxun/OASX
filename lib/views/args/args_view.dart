@@ -41,43 +41,36 @@ class Args extends StatelessWidget {
         child: ExpansionTileGroup(
           spaceBetweenItem: 16,
           children: controller.groupsName.value.map((name) {
-            return ExpansionTileItem(
-              initiallyExpanded: true,
-              title: <Widget>[
-                if (groupDraggable)
-                  Draggable<Map<String, dynamic>>(
-                    data: {
-                      'model': TaskItemModel(
-                          scriptName ?? selectedScript,
-                          taskName ?? selectedTask,
-                          '',
-                          groupName: name),
-                      'source': 'argsViewGroup'
-                    },
-                    feedback: _buildFeedback(context, name),
-                    child: const Icon(Icons.drag_indicator_outlined),
-                  ),
-                const SizedBox(width: 8),
-                Text(name.tr, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              ].toRow(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min),
-              children: [
-                Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: _children(name),
+            return Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              clipBehavior: Clip.antiAlias,
+              margin: EdgeInsets.zero,
+              child: ExpansionTileItem(
+                initiallyExpanded: true,
+                title: <Widget>[
+                  if (groupDraggable)
+                    Draggable<Map<String, dynamic>>(
+                      data: {
+                        'model': TaskItemModel(
+                            scriptName ?? selectedScript,
+                            taskName ?? selectedTask,
+                            '',
+                            groupName: name),
+                        'source': 'argsViewGroup'
+                      },
+                      feedback: _buildFeedback(context, name),
+                      child: const Icon(Icons.drag_indicator_outlined),
                     ),
-                  ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(name.tr, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                ].toRow(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min),
+                children: _children(name),
+              ),
             );
           }).toList(),
         ).constrained(maxWidth: 700, minWidth: 100),
