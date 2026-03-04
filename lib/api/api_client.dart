@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dio_cache_interceptor_file_store/dio_cache_interceptor_file_store.dart';
 import 'package:oasx/api/api_interceptor.dart';
+import 'package:oasx/api/dashboard_model.dart';
 
 import 'package:oasx/component/dio_http_cache/dio_http_cache.dart';
 import 'package:oasx/translation/i18n.dart';
@@ -296,6 +297,11 @@ class ApiClient {
     final res = await request(() => put('/$scriptName/$taskName/sync_next_run',
         queryParameters: {'target_dt': targetDt}));
     return res.isSuccess && res.data == true;
+  }
+
+  Future<DashboardModel> getDashboard() async {
+    final res = await request(() => get('/dashboard'));
+    return res.isSuccess ? DashboardModel.fromJson(res.data) : DashboardModel(configs: {});
   }
 
 // ---------------------------------   Snackbar --------------------------------

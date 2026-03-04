@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:oasx/views/home/home_binding.dart';
 
 import 'package:oasx/views/layout/layout.dart';
 import 'package:oasx/views/layout/binding.dart';
@@ -19,7 +20,10 @@ class Routes {
     GetPage(
       name: '/main',
       page: () => const LayoutView(),
-      binding: LayoutBinding(),
+      bindings: [
+        LayoutBinding(),
+        HomeBinding(),
+      ],
     ),
     GetPage(
       name: '/settings',

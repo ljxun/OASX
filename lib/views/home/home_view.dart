@@ -1,37 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:markdown_widget/markdown_widget.dart' show MarkdownWidget;
+import 'package:oasx/model/script_model.dart';
+import 'package:oasx/views/home/home_controller.dart';
 
-import 'package:oasx/api/api_client.dart';
-import 'package:oasx/utils/check_version.dart';
-import 'package:oasx/api/home_model.dart';
-import 'package:oasx/config/github_readme.dart' show githubReadme;
-
-class HomeView extends StatelessWidget {
+class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
+
+  String _getTaskSummary(ScriptModel scriptModel) {
+    if (scriptModel.runningTask.value.taskName.value.isNotEmpty) {
+      return '运行中 - ${scriptModel.runningTask.value.taskName.value.tr}';
+    }
+    if (scriptModel.pendingTaskList.isNotEmpty) {
+      return '队列中 - ${scriptModel.pendingTaskList.first.taskName.value.tr}';
+    }
+    if (scriptModel.waitingTaskList.isNotEmpty) {
+      return '等待中 - ${scriptModel.waitingTaskList.first.taskName.value.tr}';
+    }
+    return '空闲'.tr;
+  }
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(milliseconds: 300), () {
-      //延时执行的代码
-      checkUpdate().then((value) => null);
-    });
-
-    return FutureBuilder<ReadmeGithubModel>(
-        future: ApiClient().getGithubReadme(),
-        builder:
-            (BuildContext context, AsyncSnapshot<ReadmeGithubModel> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // 当Future还未完成时，显示加载中的UI
-            return const CircularProgressIndicator();
-          } else if (snapshot.hasError) {
-            // 当Future发生错误时，显示错误提示的UI
-            return Text('Error: ${snapshot.error}');
-          } else {
-            // 当Future成功完成时，显示数据
-            String content = snapshot.data?.content ?? githubReadme;
-            return MarkdownWidget(data: content).paddingAll(10);
-          }
-        });
+    return Obx(
+      () => GridView.builder(
+        padding: const EdgeInsets.all(10),
+        itemCount: controller.scriptModels.length,
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 400, // 每个格子的最大宽度
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 3, // 调整宽高比
+        ),
+        itemBuilder: (context, index) {
+          final scriptModel = controller.scriptModels[index];
+          return Card(
+            child: Obx(
+              () => Center(
+                child: ListTile(
+                  title: Text(scriptModel.name, overflow: TextOverflow.ellipsis),
+                  subtitle: Text(_getTaskSummary(scriptModel),
+                      overflow: TextOverflow.ellipsis),
+                  trailing: Icon(
+                    Icons.circle,
+                    color: scriptModel.state.value == ScriptState.running
+                        ? Colors.green
+                        : Colors.red,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
