@@ -15,21 +15,28 @@ class SettingItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final row = <Widget>[
-      left,
-      const SizedBox(width: 8),
+    final theme = Theme.of(context);
+    final content = <Widget>[
+      DefaultTextStyle(
+        style: theme.textTheme.bodyLarge!,
+        child: left,
+      ),
+      const Spacer(),
       right,
     ]
         .toRow(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
         )
-        .padding(vertical: 4);
-    return onTap == null
-        ? row
-        : InkWell(
-            onTap: onTap,
-            child: row,
-          );
+        .padding(horizontal: 16, vertical: 12);
+
+    if (onTap == null) {
+      return content;
+    }
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: content,
+    );
   }
 }

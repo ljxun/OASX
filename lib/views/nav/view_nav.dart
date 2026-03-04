@@ -26,9 +26,12 @@ class Nav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<NavCtrl>();
+    final theme = Theme.of(context);
+    final navRailColor = theme.brightness == Brightness.dark ? Colors.grey[850] : Colors.blue;
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final controller = Get.find<NavCtrl>();
         return SingleChildScrollView(
           child: IntrinsicHeight(
             child: Obx(() {
@@ -36,9 +39,17 @@ class Nav extends StatelessWidget {
                 selectedIndex: controller.selectedIndex.value,
                 onDestinationSelected: (value) =>
                     {controller.switchScript(value)},
-                labelType: NavigationRailLabelType.all, // 就是是否显示文字
-                // elevation: 20, // 影深度
-                useIndicator: true, // 指示器
+                labelType: NavigationRailLabelType.all,
+                useIndicator: true,
+                indicatorShape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                indicatorColor: theme.colorScheme.primary.withOpacity(0.2),
+                backgroundColor: navRailColor!,
+                selectedIconTheme: IconThemeData(color: theme.colorScheme.primary),
+                unselectedIconTheme: IconThemeData(color: Colors.grey[500]),
+                selectedLabelTextStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                unselectedLabelTextStyle: TextStyle(color: Colors.grey[500]),
                 trailing: _trailing(context),
                 minWidth: 48,
                 destinations: _destinations(context, controller),
@@ -70,7 +81,6 @@ class Nav extends StatelessWidget {
             icon: const Icon(Icons.home_rounded),
             label: Text(
               element.tr,
-              style: Theme.of(context).textTheme.labelMedium,
             ));
       }
       return NavigationRailDestination(
@@ -92,7 +102,7 @@ class Nav extends StatelessWidget {
               return BlurLoadingOverlay(
                   loading: controller.isCopyLoadingMap[element] ?? false,
                   child: GestureDetector(
-                      child: const Icon(Icons.play_circle),
+                      child: const Icon(Icons.play_circle_outline),
                       onSecondaryTapDown: (details) {
                         if (PlatformUtils.isMobile) return;
                         _showContextMenu(
@@ -108,7 +118,6 @@ class Nav extends StatelessWidget {
           label: GestureDetector(
               child: Text(
                 element.tr,
-                style: Theme.of(context).textTheme.labelMedium,
               ),
               onSecondaryTapDown: (details) {
                 if (PlatformUtils.isMobile) return;
@@ -122,12 +131,12 @@ class Nav extends StatelessWidget {
   }
 
   Widget _trailing(BuildContext context) {
+    final iconColor = Colors.grey[400];
     return <Widget>[
       IconButton(
-          icon: const Icon(Icons.add), onPressed: () => addButton(context)),
-      // _DarkMode(onPressed: controllerSetting.updateTheme),
+          icon: Icon(Icons.add_circle_outline, color: iconColor), onPressed: () => addButton(context)),
       IconButton(
-          icon: const Icon(Icons.settings),
+          icon: Icon(Icons.settings_outlined, color: iconColor),
           onPressed: () {
             Get.toNamed('/settings');
           }),

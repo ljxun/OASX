@@ -29,11 +29,15 @@ class SettingsView extends StatelessWidget {
   const SettingsView({Key? key}) : super(key: key);
 
   static const double minCardWidth = 400;
-  static const double spacing = 8.0;
+  static const double spacing = 16.0;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final contentBackgroundColor = theme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200];
+
     return Scaffold(
+      backgroundColor: contentBackgroundColor,
       appBar: buildPlatformAppBar(context),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -47,7 +51,7 @@ class SettingsView extends StatelessWidget {
             crossAxisSpacing: spacing,
             itemCount: cards.length,
             itemBuilder: (context, index) => cards[index],
-          ).paddingOnly(left: 8, right: 8, top: 8);
+          ).paddingAll(16);
         },
       ),
     );

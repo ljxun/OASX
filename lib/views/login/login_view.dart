@@ -25,108 +25,132 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final contentBackgroundColor = theme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200];
+
     return Scaffold(
+      backgroundColor: contentBackgroundColor,
       appBar: buildPlatformAppBar(context),
       floatingActionButton: PlatformUtils.isWindows ? _serverButton() : null,
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
-      body: _login(context),
+      body: Center(
+        child: SingleChildScrollView(
+          child: _loginCard(context),
+        ),
+      ),
     );
   }
 
-  Widget _login(BuildContext context) {
-    List<double> maxWidthHigh = switch (Theme.of(context).platform) {
-      TargetPlatform.windows => [400, 500],
-      TargetPlatform.linux => [400, 500],
-      TargetPlatform.macOS => [400, 500],
-      _ => [],
-    };
-    return FormBuilder(
-      key: _formKey,
-      child: <Widget>[_admin(context), _address(), _username(), _password(), _signin()]
-          .toColumn(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center),
-    )
-        .padding(vertical: 10)
-        // .card(
-        //     elevation: 10,
-        //     shape: RoundedRectangleBorder(
-        //       borderRadius: BorderRadius.circular(20),
-        //     ))
-        .constrained(
-            maxHeight: maxWidthHigh.isNotEmpty ? maxWidthHigh[0] : 500,
-            maxWidth: maxWidthHigh.isNotEmpty ? maxWidthHigh[1] : 400)
-        .alignment(Alignment.center);
+  Widget _loginCard(BuildContext context) {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.all(24),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: _loginForm(context),
+      ),
+    ).constrained(maxWidth: 400);
   }
 
-  Widget _admin(BuildContext context) {
+  Widget _loginForm(BuildContext context) {
+    return FormBuilder(
+      key: _formKey,
+      child: <Widget>[
+        _adminTitle(context),
+        const SizedBox(height: 24),
+        _addressField(),
+        const SizedBox(height: 16),
+        _usernameField(),
+        const SizedBox(height: 16),
+        _passwordField(),
+        const SizedBox(height: 32),
+        _signinButton(),
+      ].toColumn(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+      ),
+    );
+  }
+
+  Widget _adminTitle(BuildContext context) {
     ThemeData theme = Theme.of(context);
     return Text(
       'Admin Login',
       textAlign: TextAlign.center,
       style: TextStyle(
-          color: theme.colorScheme.primary,
-          fontSize: 24,
-          fontWeight: FontWeight.bold),
-    ).padding(horizontal: 20);
+        color: theme.colorScheme.primary,
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+      ),
+    );
   }
 
-  Widget _username() {
+  Widget _usernameField() {
     LoginController loginController = Get.find<LoginController>();
     return FormBuilderTextField(
       name: 'username',
       initialValue: loginController.username.value,
-      decoration: const InputDecoration(labelText: 'Username'),
-      // validator: FormBuilderValidators.compose([
-      //   FormBuilderValidators.maxLength(1, errorText: "Account does not exist"),
-      // ]),
-    ).padding(horizontal: 20, top: 5);
+      decoration: _inputDecoration('Username', Icons.person_outline),
+    );
   }
 
-  Widget _password() {
+  Widget _passwordField() {
     LoginController loginController = Get.find<LoginController>();
     return FormBuilderTextField(
       name: 'password',
       initialValue: loginController.password.value,
-      decoration: const InputDecoration(labelText: 'Password'),
+      decoration: _inputDecoration('Password', Icons.lock_outline),
       obscureText: true,
-      // validator: FormBuilderValidators.compose([
-      //   FormBuilderValidators.maxLength(1, errorText: "Incorrect password"),
-      // ]),
-    ).padding(horizontal: 20, top: 20);
+    );
   }
 
-  Widget _address() {
+  Widget _addressField() {
     LoginController loginController = Get.find<LoginController>();
     return FormBuilderTextField(
       name: 'address',
       initialValue: loginController.address.value,
-      decoration: const InputDecoration(labelText: 'Address'),
-      // validator: FormBuilderValidators.compose([
-      //   FormBuilderValidators.required(),
-      //   FormBuilderValidators.match(RegExp(r"\\d+.\\d+.\\d+.\\d+:\\d+"),
-      //       errorText: "Format: [ip]:[port]"),
-      // ]),
-    ).padding(horizontal: 20, top: 20);
+      decoration: _inputDecoration('Address', Icons.http_outlined),
+    );
   }
 
-  Widget _signin() {
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      filled: true,
+      fillColor: Colors.grey.withOpacity(0.1),
+    );
+  }
+
+  Widget _signinButton() {
     LoginController loginController = Get.find<LoginController>();
     return ElevatedButton(
-      onPressed: () async => {
-        if (_formKey.currentState?.saveAndValidate() ?? false)
-          {await loginController.toMain(data: _formKey.currentState!.value)}
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      onPressed: () async {
+        if (_formKey.currentState?.saveAndValidate() ?? false) {
+          await loginController.toMain(data: _formKey.currentState!.value);
+        }
       },
-      child: const Text('Login'),
-    ).padding(horizontal: 20, top: 40);
+      child: const Text('Login', style: TextStyle(fontSize: 16)),
+    );
   }
 
   Widget _serverButton() {
     return FloatingActionButton(
-        heroTag: 'SERVER',
-        child: const Icon(Icons.developer_board_rounded),
-        onPressed: () {
-          Get.toNamed('/server');
-        });
+      heroTag: 'SERVER',
+      child: const Icon(Icons.developer_board_rounded),
+      onPressed: () {
+        Get.toNamed('/server');
+      },
+    );
   }
 }

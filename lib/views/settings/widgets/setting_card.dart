@@ -14,24 +14,25 @@ class SettingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
-      elevation: 2,
+      elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: <Widget>[
           Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
           ),
-          const SizedBox(height: 12),
+          const Divider(height: 24),
           ...items
               .map(
-                (item) => item.padding(bottom: 5),
-          )
+                (item) => item.padding(bottom: 8),
+              )
               .toList(),
         ].toColumn(crossAxisAlignment: CrossAxisAlignment.start),
       ),

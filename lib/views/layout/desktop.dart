@@ -21,11 +21,33 @@ class DesktopLayoutViewState extends State<DesktopLayoutView> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isCollapsed = constraints.maxWidth < collapseBreakpoint;
+        final theme = Theme.of(context);
+        final contentBackgroundColor = theme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200];
+
+        Widget contentArea = Container(
+          margin: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Center(child: content()),
+          ),
+        );
 
         if (isCollapsed) {
           // 小屏模式：显示 Drawer
           return Scaffold(
             key: _scaffoldKey,
+            backgroundColor: contentBackgroundColor,
             appBar: buildPlatformAppBar(
               context,
               isCollapsed: true,
@@ -40,11 +62,12 @@ class DesktopLayoutViewState extends State<DesktopLayoutView> {
                 ],
               ),
             ),
-            body: Center(child: content()),
+            body: contentArea,
           );
         } else {
           // 大屏模式：三栏布局
           return Scaffold(
+            backgroundColor: contentBackgroundColor,
             appBar: buildPlatformAppBar(context),
             body: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,7 +75,7 @@ class DesktopLayoutViewState extends State<DesktopLayoutView> {
                 const Nav(),
                 const TreeMenuView(),
                 Expanded(
-                  child: Center(child: content()),
+                  child: contentArea,
                 ),
               ],
             ),
