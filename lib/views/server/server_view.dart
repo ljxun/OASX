@@ -26,11 +26,7 @@ class ServerView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final contentBackgroundColor = theme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200];
-
     return Scaffold(
-      backgroundColor: contentBackgroundColor,
       appBar: buildPlatformAppBar(context),
       floatingActionButton: startServerButton(),
       body: _body(),
@@ -42,114 +38,93 @@ class ServerView extends StatelessWidget {
         builder: (BuildContext context, BoxConstraints constraints) {
       ServerController serverController = Get.find<ServerController>();
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildCard(
-              context: context,
-              title: I18n.root_path_server.tr,
-              child: path(context),
-              initiallyExpanded: true,
-            ),
-            const SizedBox(height: 16),
-            _buildCard(
-              context: context,
-              title: I18n.setup_deploy.tr,
-              child: deploy(constraints.maxHeight - 200, context),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              child: LogWidget(
-                key: ValueKey(serverController.hashCode),
-                controller: serverController,
-                title: I18n.setup_log.tr,
-              ).constrained(height: constraints.maxHeight - 200),
-            ),
-          ],
-        ),
-      );
+          child: Column(
+        spacing: 6,
+        children: [
+          ExpansionTileGroup(
+            toggleType: ToggleType.expandOnlyCurrent,
+            children: [
+              path(context),
+              deploy(constraints.maxHeight - 200, context),
+            ],
+          ),
+          LogWidget(
+                  key: ValueKey(serverController.hashCode),
+                  controller: serverController,
+                  title: I18n.setup_log.tr)
+              .constrained(height: constraints.maxHeight - 200)
+        ],
+      ).padding(right: 10, left: 10));
     });
   }
 
-  Widget _buildCard({
-    required BuildContext context,
-    required String title,
-    required Widget child,
-    bool initiallyExpanded = false,
-  }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
-      child: ExpansionTile(
-        initiallyExpanded: initiallyExpanded,
-        title: Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: child,
-          )
-        ],
-      ),
+  ExpansionTileItem path(BuildContext context) {
+    Widget path = GetX<ServerController>(builder: (controller) {
+      return <Widget>[
+        Text(I18n.root_path_server.tr,
+            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(
+          width: 10,
+        ),
+        Text(controller.rootPathServer.value),
+        TextButton(
+            onPressed: () async {
+              String? selectedDirectory =
+                  await FilePicker.platform.getDirectoryPath();
+              if (selectedDirectory == null) {
+                // User canceled the picker
+                return;
+              }
+              controller.updateRootPathServer(selectedDirectory);
+            },
+            child: Text(I18n.select_root_path_server.tr))
+      ].toRow();
+    });
+    Widget pass = GetX<ServerController>(builder: (controller) {
+      return <Widget>[
+        controller.rootPathAuthenticated.value
+            ? const Icon(Icons.check_circle, color: Colors.green)
+            : const Icon(Icons.error, color: Colors.red),
+        Text(
+          controller.rootPathAuthenticated.value
+              ? I18n.root_path_correct.tr
+              : I18n.root_path_incorrect.tr,
+          // style: Theme.of(context).textTheme.titleMedium
+        ),
+      ].toRow();
+    });
+
+    return ExpansionTileItem(
+      initiallyExpanded: false,
+      isHasTopBorder: false,
+      isHasBottomBorder: false,
+      collapsedBackgroundColor:
+          Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.24),
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
+      title: pass,
+      children: [
+        path,
+        Text(I18n.root_path_server_help.tr),
+      ],
     );
   }
 
-  Widget path(BuildContext context) {
-    return GetX<ServerController>(builder: (controller) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  controller.rootPathServer.value,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  String? selectedDirectory =
-                      await FilePicker.platform.getDirectoryPath();
-                  if (selectedDirectory == null) {
-                    return;
-                  }
-                  controller.updateRootPathServer(selectedDirectory);
-                },
-                child: Text(I18n.select.tr),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              controller.rootPathAuthenticated.value
-                  ? const Icon(Icons.check_circle, color: Colors.green)
-                  : const Icon(Icons.error, color: Colors.red),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  controller.rootPathAuthenticated.value
-                      ? I18n.root_path_correct.tr
-                      : I18n.root_path_incorrect.tr,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(I18n.root_path_server_help.tr, style: Theme.of(context).textTheme.bodySmall),
-        ],
-      );
-    });
-  }
-
-  Widget deploy(double maxHeight, BuildContext context) {
-    return code(maxHeight - 50);
+  ExpansionTileItem deploy(double maxHeight, BuildContext context) {
+    return ExpansionTileItem(
+      initiallyExpanded: false,
+      isHasTopBorder: false,
+      isHasBottomBorder: false,
+      collapsedBackgroundColor:
+          Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.24),
+      borderRadius: const BorderRadius.all(Radius.circular(10)),
+      title: Text(I18n.setup_deploy.tr,
+          style: Theme.of(context).textTheme.titleMedium),
+      children: [
+        SingleChildScrollView(
+          child: code(maxHeight - 50),
+        ).constrained(height: maxHeight)
+      ],
+    );
   }
 
   Widget startServerButton() {
@@ -174,25 +149,27 @@ class ServerView extends StatelessWidget {
               controller.run();
             });
       } else {
-        return const SizedBox.shrink();
+        return const SizedBox(
+          width: 100,
+          height: 100,
+        );
       }
     });
   }
 
   Widget code(double maxHeight) {
-    final theme = Theme.of(Get.context!);
     return GetX<ServerController>(builder: (controller) {
       FileEditor file = FileEditor(
         name: "deploy.yaml",
         language: "yaml",
-        code: controller.deployContent.value,
+        code: controller.deployContent.value, // [code] needs a string
       );
       EditorModel model = EditorModel(
-        files: [file],
+        files: [file], // the files created above
+        // you can customize the editor as you want
         styleOptions: EditorModelStyleOptions(
           heightOfContainer: maxHeight,
-          editorColor: theme.colorScheme.surface.withOpacity(0.5),
-          theme: theme.brightness == Brightness.dark ? monokaiSublimeTheme : atomOneLightTheme,
+          // theme: githubTheme,
         ),
       );
       return CodeEditor(

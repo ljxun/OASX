@@ -1,5 +1,7 @@
 library args;
 
+// import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_pickers/pickers.dart';
@@ -37,85 +39,85 @@ class Args extends StatelessWidget {
       final selectedScript = navController.selectedScript.value;
       final selectedTask = navController.selectedMenu.value;
       return SingleChildScrollView(
-        padding: const EdgeInsets.all(8),
-        child: ExpansionTileGroup(
-          spaceBetweenItem: 16,
-          children: controller.groupsName.value.map((name) {
-            return Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              clipBehavior: Clip.antiAlias,
-              margin: EdgeInsets.zero,
-              child: ExpansionTileItem(
-                initiallyExpanded: true,
-                title: <Widget>[
-                  if (groupDraggable)
-                    Draggable<Map<String, dynamic>>(
-                      data: {
-                        'model': TaskItemModel(
-                            scriptName ?? selectedScript,
-                            taskName ?? selectedTask,
-                            '',
-                            groupName: name),
-                        'source': 'argsViewGroup'
-                      },
-                      feedback: _buildFeedback(context, name),
-                      child: const Icon(Icons.drag_indicator_outlined),
-                    ),
-                  const SizedBox(width: 8),
-                  Text(name.tr, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                ].toRow(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min),
-                children: _children(name),
-              ),
-            );
-          }).toList(),
-        ).constrained(maxWidth: 700, minWidth: 100),
-      ).alignment(Alignment.topCenter);
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              child: ExpansionTileGroup(
+                      spaceBetweenItem: 10,
+                      children: controller.groupsName.value
+                          .map((name) => ExpansionTileItem(
+                                initiallyExpanded: true,
+                                isHasTopBorder: false,
+                                isHasBottomBorder: false,
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer
+                                    .withValues(alpha: 0.24),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                                title: <Widget>[
+                                  if (groupDraggable)
+                                    Draggable<Map<String, dynamic>>(
+                                      data: {
+                                        'model': TaskItemModel(
+                                            scriptName ?? selectedScript,
+                                            taskName ?? selectedTask,
+                                            '',
+                                            groupName: name),
+                                        'source': 'argsViewGroup'
+                                      },
+                                      feedback: _buildFeedback(context, name),
+                                      child: const Icon(
+                                          Icons.drag_indicator_outlined),
+                                    ),
+                                  Text(name.tr)
+                                ].toRow(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min),
+                                children: _children(name),
+                              ))
+                          .toList())
+                  .constrained(maxWidth: 700, minWidth: 100))
+          .alignment(Alignment.topCenter);
     });
   }
 
   List<Widget> _children(String groupName) {
     ArgsController controller = Get.find();
     GroupsModel groupsModel = controller.groupsData.value[groupName]!;
-    return groupsModel.members.map((_) {
-      final index = groupsModel.members.indexOf(_);
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: ArgumentView(
-          scriptName: scriptName,
-          taskName: taskName,
-          setArgument: controller.setArgument,
-          getGroupName: groupsModel.getGroupName,
-          index: index,
-        ),
-      );
-    }).toList();
+    List<Widget> result = [const Divider()];
+    for (int i = 0; i < groupsModel.members.length; i++) {
+      result.add(ArgumentView(
+        scriptName: scriptName,
+        taskName: taskName,
+        setArgument: controller.setArgument,
+        getGroupName: groupsModel.getGroupName,
+        index: i,
+      ));
+    }
+    return result;
   }
 
   Widget _buildFeedback(BuildContext context, String title) {
-    final theme = Theme.of(context);
+    final themeService = Get.find<ThemeService>();
     return Material(
-      elevation: 4.0,
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.drag_indicator_outlined),
-            const SizedBox(width: 8),
-            Text(title.tr, style: theme.textTheme.titleMedium),
-          ],
-        ),
-      ).width(200),
+      child: Text(title.tr, style: Theme.of(context).textTheme.titleMedium)
+          .decorated(
+            color: themeService.isDarkMode
+                ? Colors.blueGrey.shade700
+                : Colors.blueGrey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 6,
+                offset: Offset(2, 2),
+              ),
+            ],
+          )
+          .width(150)
+          .height(30)
+          .paddingAll(8)
+          .opacity(0.8),
     );
   }
 }
@@ -138,11 +140,13 @@ class ArgumentView extends StatefulWidget {
       : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _ArgumentViewState createState() => _ArgumentViewState();
 }
 
 class _ArgumentViewState extends State<ArgumentView> {
   Timer? timer;
+  bool landscape = true;
 
   ArgumentModel get model {
     ArgsController controller = Get.find();
@@ -153,130 +157,130 @@ class _ArgumentViewState extends State<ArgumentView> {
 
   @override
   Widget build(BuildContext context) {
-    bool isWide = MediaQuery.of(context).size.width > 500;
+    landscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    if (landscape) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: _title(),
+          ),
+          _form(),
+        ],
+      ).padding(bottom: 8);
+    } else {
+      return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [_title(), _form()]).padding(bottom: 8);
+    }
+    // return LayoutBuilder(builder: (context, constraints) {
+    //   if (constraints.maxWidth >= 350) {
+    //     return Row(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: [
+    //         Expanded(
+    //           child: _title(),
+    //         ),
 
-    Widget content = isWide
-        ? Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(child: _title()),
-              const SizedBox(width: 16),
-              SizedBox(width: 220, child: _form()),
-            ],
-          )
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [_title(), const SizedBox(height: 8), _form()]);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
-        ),
-      ),
-      child: content,
-    );
+    //         // const Spacer(),
+    //         _form(),
+    //       ],
+    //     );
+    //   } else {
+    //     return Column(
+    //         crossAxisAlignment: CrossAxisAlignment.start,
+    //         children: [_title(), _form()]);
+    //   }
+    // });
   }
 
   Widget _title() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       SelectableText(
         model.title.tr,
-        style: Theme.of(context).textTheme.titleSmall,
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
       if (model.description != null && model.description!.isNotEmpty)
-        Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: SelectableText(
-            model.description!.tr,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+        SelectableText(
+          model.description!.tr,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
     ]);
   }
 
-  InputDecoration _inputDecoration(String? hint) {
-    return InputDecoration(
-      hintText: hint,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      isDense: true,
-      filled: true,
-      fillColor: Colors.grey.withOpacity(0.1),
-    );
-  }
-
   Widget _form() {
-    switch (model.type) {
-      case "boolean":
-        return CheckboxListTile(
-          title: Text(model.title.tr, style: Theme.of(context).textTheme.bodyMedium),
-          value: model.value,
-          onChanged: onCheckboxChanged,
-          controlAffinity: ListTileControlAffinity.leading,
-          contentPadding: EdgeInsets.zero,
-        );
-      case "string":
-      case "multi_line":
-        return TextFormField(
+    return switch (model.type) {
+      "boolean" => Checkbox(value: model.value, onChanged: onCheckboxChanged)
+          .alignment(Alignment.centerLeft)
+          .constrained(width: landscape ? 200 : null),
+      "string" => TextFormField(
           initialValue: model.value.toString(),
-          maxLines: model.type == "multi_line" ? null : 1,
-          decoration: _inputDecoration(null),
           onChanged: (value) {
             timer?.cancel();
             timer = Timer(const Duration(milliseconds: 1000),
                 () => onStringChanged(value));
-          },
-        );
-      case "number":
-      case "integer":
-        return TextFormField(
+          }).constrained(width: landscape ? 200 : null),
+      "multi_line" => TextFormField(
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          maxLines: null,
           initialValue: model.value.toString(),
+          onChanged: (value) {
+            timer?.cancel();
+            timer = Timer(const Duration(milliseconds: 1000),
+                () => onStringChanged(value));
+          }).constrained(width: landscape ? 200 : null),
+      "number" => TextFormField(
           keyboardType: TextInputType.number,
           inputFormatters: [
-            FilteringTextInputFormatter.allow(
-                model.type == "integer" ? RegExp('[-0-9]') : RegExp('[-0-9.]')),
+            FilteringTextInputFormatter.allow(RegExp('[-0-9.]')),
           ],
-          decoration: _inputDecoration(null),
+          initialValue: model.value.toString(),
           onChanged: (value) {
             timer?.cancel();
             timer = Timer(const Duration(milliseconds: 1000),
                 () => onNumberChanged(value));
-          },
-        );
-      case "enum":
-        return DropdownButtonFormField<String>(
-          decoration: _inputDecoration(null),
+          }).constrained(width: landscape ? 200 : null),
+      "integer" => TextFormField(
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp('[-0-9]')),
+          ],
+          initialValue: model.value.toString(),
+          onChanged: (value) {
+            timer?.cancel();
+            timer = Timer(const Duration(milliseconds: 1000),
+                () => onIntegerChanged(value));
+          }).constrained(width: landscape ? 200 : null),
+      "enum" => DropdownButton<String>(
+          isExpanded: !landscape,
+          menuMaxHeight: Get.height * 0.5,
           value: model.value.toString(),
           items: model.enumEnum!
               .map<DropdownMenuItem<String>>((e) => DropdownMenuItem(
                   value: e.toString(),
                   child: Text(
                     e.toString().tr,
-                    overflow: TextOverflow.ellipsis,
-                  )))
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ).constrained(width: landscape ? 177 : null)))
               .toList(),
           onChanged: onEnumChanged,
-        );
-      case "date_time":
-        return DateTimePicker(
+        ),
+      "date_time" => DateTimePicker(
           value: model.value,
           onChange: onDateTimeChanged,
-        );
-      case "time_delta":
-        return TimeDeltaPicker(
+        ).constrained(width: landscape ? 200 : null),
+      "time_delta" => TimeDeltaPicker(
           value: ensureTimeDeltaString(model.value),
           onChange: onTimeDeltaChanged,
-        );
-      case "time":
-        return TimePicker(
+        ).constrained(width: landscape ? 200 : null),
+      "time" => TimePicker(
           value: model.value,
           onChange: onTimeChanged,
-        );
-      default:
-        return SelectableText(model.value.toString());
-    }
+        ).constrained(width: landscape ? 200 : null),
+      _ =>
+        Text(model.value.toString()).constrained(width: landscape ? 200 : null)
+    };
   }
 
   void onCheckboxChanged(bool? value) {
@@ -297,6 +301,12 @@ class _ArgumentViewState extends State<ArgumentView> {
   void onNumberChanged(String? value) {
     widget.setArgument(widget.scriptName, widget.taskName,
         widget.getGroupName(), model.title, 'number', value);
+    showSnakbar(value);
+  }
+
+  void onIntegerChanged(String? value) {
+    widget.setArgument(widget.scriptName, widget.taskName,
+        widget.getGroupName(), model.title, 'integer', value);
     showSnakbar(value);
   }
 
@@ -336,6 +346,7 @@ class _ArgumentViewState extends State<ArgumentView> {
     showSnakbar(value);
   }
 
+// -----------------------------------------------------------------------------
   void showSnakbar(dynamic value) {
     Get.snackbar(I18n.setting_saved.tr, "$value",
         duration: const Duration(seconds: 1));

@@ -37,44 +37,22 @@ class Overview extends StatelessWidget {
     NavCtrl navController = Get.find<NavCtrl>();
     OverviewController overviewController =
         Get.find<OverviewController>(tag: navController.selectedScript.value);
-
-    Widget buildCard({required Widget child, String? title}) {
-      return Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: title != null
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                    const Divider(height: 24),
-                    child,
-                  ],
-                )
-              : child,
-        ),
-      );
-    }
-
     if (context.mediaQuery.orientation == Orientation.portrait) {
       // 竖方向
       return SingleChildScrollView(
         child: <Widget>[
-          buildCard(child: _SchedulerWidget(controller: overviewController), title: '任务调度器'),
-          buildCard(child: _RunningWidget(controller: overviewController), title: '正在运行'),
-          buildCard(child: _PendingWidget(controller: overviewController), title: '待处理'),
-          buildCard(child: _WaitingWidget(controller: overviewController), title: '等待中').constrained(maxHeight: 250),
-          buildCard(
-            child: LogWidget(
-              key: ValueKey(overviewController.hashCode),
-              controller: overviewController,
-              title: I18n.log.tr,
-              enableCollapse: false,
-            ).constrained(maxHeight: 500),
-          ),
+          _SchedulerWidget(controller: overviewController),
+          _RunningWidget(controller: overviewController),
+          _PendingWidget(controller: overviewController),
+          _WaitingWidget(controller: overviewController)
+              .constrained(maxHeight: 200),
+          LogWidget(
+                  key: ValueKey(overviewController.hashCode),
+                  controller: overviewController,
+                  title: I18n.log.tr,
+                  enableCollapse: false)
+              .constrained(maxHeight: 500)
+              .marginOnly(left: 10, top: 10, right: 10)
         ].toColumn(),
       );
     } else {
@@ -82,22 +60,19 @@ class Overview extends StatelessWidget {
       return <Widget>[
         // 左边
         <Widget>[
-          buildCard(child: _SchedulerWidget(controller: overviewController), title: '任务调度器'),
-          buildCard(child: _RunningWidget(controller: overviewController), title: '正在运行'),
-          buildCard(child: _PendingWidget(controller: overviewController), title: '待处理'),
-          Expanded(child: buildCard(child: _WaitingWidget(controller: overviewController), title: '等待中')),
-        ].toColumn().constrained(width: 400),
+          _SchedulerWidget(controller: overviewController),
+          _RunningWidget(controller: overviewController),
+          _PendingWidget(controller: overviewController),
+          Expanded(child: _WaitingWidget(controller: overviewController)),
+        ].toColumn().constrained(width: 300),
         // 右边
-        Expanded(
-          child: buildCard(
-            child: LogWidget(
-              key: ValueKey(overviewController.hashCode),
-              controller: overviewController,
-              title: I18n.log.tr,
-              enableCollapse: false,
-            ),
-          ),
-        ),
+        LogWidget(
+                key: ValueKey(overviewController.hashCode),
+                controller: overviewController,
+                title: I18n.log.tr,
+                enableCollapse: false)
+            .marginOnly(right: 10)
+            .expanded()
       ].toRow();
     }
   }

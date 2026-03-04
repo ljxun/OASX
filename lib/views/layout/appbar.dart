@@ -12,69 +12,35 @@ PreferredSizeWidget buildPlatformAppBar(BuildContext context, {
   VoidCallback? onMenuPressed,
 }) {
   final platform = PlatformUtils.platfrom();
-  const double appBarHeight = 60.0;
-  final Color appBarColor = Theme.of(context).brightness == Brightness.dark ? Colors.grey[850]! : Colors.blue;
-  final Color titleColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white;
-
   return switch (platform) {
     PlatformType.windows => _windowAppbar(
       context,
       onMenuPressed: isCollapsed ? onMenuPressed : null,
-      height: appBarHeight,
-      color: appBarColor,
-      titleColor: titleColor,
     ),
-    PlatformType.linux => _desktopAppbar(
-      height: appBarHeight,
-      color: appBarColor,
-      titleColor: titleColor,
-    ),
-    PlatformType.macOS => _desktopAppbar(
-      height: appBarHeight,
-      color: appBarColor,
-      titleColor: titleColor,
-    ),
-    PlatformType.android => _mobileTabletAppbar(
-      height: appBarHeight,
-      color: appBarColor,
-      titleColor: titleColor,
-    ),
-    PlatformType.iOS => _mobileTabletAppbar(
-      height: appBarHeight,
-      color: appBarColor,
-      titleColor: titleColor,
-    ),
-    PlatformType.web => _webAppbar(
-      height: appBarHeight,
-      color: appBarColor,
-      titleColor: titleColor,
-    ),
-    _ => _webAppbar(
-      height: appBarHeight,
-      color: appBarColor,
-      titleColor: titleColor,
-    ),
+    PlatformType.linux => _desktopAppbar(),
+    PlatformType.macOS => _desktopAppbar(),
+    PlatformType.android => _mobileTabletAppbar(),
+    PlatformType.iOS => _mobileTabletAppbar(),
+    PlatformType.web => _webAppbar(),
+    _ => _webAppbar(),
   };
 }
 
 /// Windows 特殊标题栏
-PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPressed, required double height, required Color color, required Color titleColor}) {
+PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPressed}) {
   return PreferredSize(
-    preferredSize: Size.fromHeight(height),
+    preferredSize: const Size.fromHeight(50),
     child: WindowCaption(
       brightness: Theme.of(context).brightness,
-      backgroundColor: color,
+      backgroundColor: Colors.transparent,
       title: Row(
         children: [
           if (onMenuPressed != null)
             IconButton(
-              icon: Icon(Icons.menu, color: titleColor),
+              icon: const Icon(Icons.menu),
               onPressed: onMenuPressed,
             ),
-          DefaultTextStyle(
-            style: TextStyle(color: titleColor, fontSize: 20),
-            child: getTitle(),
-          ),
+          getTitle(),
         ],
       ),
     ),
@@ -82,37 +48,23 @@ PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPre
 }
 
 /// 桌面 (Linux / macOS)
-PreferredSizeWidget _desktopAppbar({required double height, required Color color, required Color titleColor}) {
+PreferredSizeWidget _desktopAppbar() {
   return AppBar(
-    toolbarHeight: height,
-    backgroundColor: color,
-    titleTextStyle: TextStyle(color: titleColor, fontSize: 20),
-    title: getTitle(),
-    elevation: 4,
+    title: getTitle()
   );
 }
 
 /// Web
-PreferredSizeWidget _webAppbar({required double height, required Color color, required Color titleColor}) {
+PreferredSizeWidget _webAppbar() {
   return PreferredSize(
-    preferredSize: Size.fromHeight(height),
-    child: AppBar(
-      toolbarHeight: height,
-      backgroundColor: color,
-      titleTextStyle: TextStyle(color: titleColor, fontSize: 20),
-      title: getTitle(),
-      elevation: 4,
-    ).padding(left: 16, top: 10, bottom: 10),
+    preferredSize: const Size.fromHeight(90),
+    child: getTitle().padding(left: 16, top: 10, bottom: 10),
   );
 }
 
 /// 移动端 (Android / iOS)
-PreferredSizeWidget _mobileTabletAppbar({required double height, required Color color, required Color titleColor}) {
+PreferredSizeWidget _mobileTabletAppbar() {
   return AppBar(
-    toolbarHeight: height,
-    backgroundColor: color,
-    titleTextStyle: TextStyle(color: titleColor, fontSize: 20),
-    title: getTitle(),
-    elevation: 4,
+    title: getTitle()
   );
 }
