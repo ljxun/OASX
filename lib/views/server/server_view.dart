@@ -121,7 +121,7 @@ class ServerView extends StatelessWidget {
                   }
                   controller.updateRootPathServer(selectedDirectory);
                 },
-                child: Text(I18n.select.tr),
+                child: Text(I18n.select_root_path_server.tr),
               ),
             ],
           ),
@@ -192,7 +192,6 @@ class ServerView extends StatelessWidget {
         styleOptions: EditorModelStyleOptions(
           heightOfContainer: maxHeight,
           editorColor: theme.colorScheme.surface.withOpacity(0.5),
-          theme: theme.brightness == Brightness.dark ? monokaiSublimeTheme : atomOneLightTheme,
         ),
       );
       return CodeEditor(
