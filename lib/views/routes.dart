@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:oasx/views/home/home_binding.dart';
 
 import 'package:oasx/views/layout/layout.dart';
 import 'package:oasx/views/layout/binding.dart';
 import 'package:oasx/views/login/login_view.dart';
+import 'package:oasx/views/overview/overview_view.dart';
 import 'package:oasx/views/settings/settings_view.dart';
 import 'package:oasx/views/server/server_view.dart';
 
@@ -25,6 +27,18 @@ class Routes {
         HomeBinding(),
       ],
     ),
+    GetPage(
+        name: '/overview/:name',
+        page: () {
+          final name = Get.parameters['name'];
+          if (name == null) {
+            return const Text("Configuration not found");
+          }
+          // The controller will be created here if not found,
+          // and automatically disposed when the page is closed.
+          Get.put(tag: name, OverviewController(name: name));
+          return Overview(name: name);
+        }),
     GetPage(
       name: '/settings',
       page: () => SettingsView(),

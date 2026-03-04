@@ -10,24 +10,26 @@ import 'package:oasx/utils/platform_utils.dart';
 PreferredSizeWidget buildPlatformAppBar(BuildContext context, {
   bool isCollapsed = false,
   VoidCallback? onMenuPressed,
+  List<Widget>? actions,
 }) {
   final platform = PlatformUtils.platfrom();
   return switch (platform) {
     PlatformType.windows => _windowAppbar(
       context,
       onMenuPressed: isCollapsed ? onMenuPressed : null,
+      actions: actions,
     ),
-    PlatformType.linux => _desktopAppbar(),
-    PlatformType.macOS => _desktopAppbar(),
-    PlatformType.android => _mobileTabletAppbar(),
-    PlatformType.iOS => _mobileTabletAppbar(),
+    PlatformType.linux => _desktopAppbar(actions: actions),
+    PlatformType.macOS => _desktopAppbar(actions: actions),
+    PlatformType.android => _mobileTabletAppbar(actions: actions),
+    PlatformType.iOS => _mobileTabletAppbar(actions: actions),
     PlatformType.web => _webAppbar(),
     _ => _webAppbar(),
   };
 }
 
 /// Windows 特殊标题栏
-PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPressed}) {
+PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPressed, List<Widget>? actions}) {
   return PreferredSize(
     preferredSize: const Size.fromHeight(50),
     child: WindowCaption(
@@ -41,6 +43,8 @@ PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPre
               onPressed: onMenuPressed,
             ),
           getTitle(),
+          const Spacer(),
+          if (actions != null) ...actions,
         ],
       ),
     ),
@@ -48,9 +52,10 @@ PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPre
 }
 
 /// 桌面 (Linux / macOS)
-PreferredSizeWidget _desktopAppbar() {
+PreferredSizeWidget _desktopAppbar({List<Widget>? actions}) {
   return AppBar(
-    title: getTitle()
+    title: getTitle(),
+    actions: actions,
   );
 }
 
@@ -63,8 +68,9 @@ PreferredSizeWidget _webAppbar() {
 }
 
 /// 移动端 (Android / iOS)
-PreferredSizeWidget _mobileTabletAppbar() {
+PreferredSizeWidget _mobileTabletAppbar({List<Widget>? actions}) {
   return AppBar(
-    title: getTitle()
+    title: getTitle(),
+    actions: actions,
   );
 }
