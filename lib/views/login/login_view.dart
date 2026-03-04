@@ -42,58 +42,16 @@ class LoginView extends StatelessWidget {
     };
     return FormBuilder(
       key: _formKey,
-      child: <Widget>[_admin(context), _address(), _username(), _password(), _signin()]
+      child: <Widget>[_address(), _signin()]
           .toColumn(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center),
     )
         .padding(vertical: 10)
-        // .card(
-        //     elevation: 10,
-        //     shape: RoundedRectangleBorder(
-        //       borderRadius: BorderRadius.circular(20),
-        //     ))
         .constrained(
             maxHeight: maxWidthHigh.isNotEmpty ? maxWidthHigh[0] : 500,
             maxWidth: maxWidthHigh.isNotEmpty ? maxWidthHigh[1] : 400)
         .alignment(Alignment.center);
-  }
-
-  Widget _admin(BuildContext context) {
-    ThemeData theme = Theme.of(context);
-    return Text(
-      'Admin Login',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-          color: theme.colorScheme.primary,
-          fontSize: 24,
-          fontWeight: FontWeight.bold),
-    ).padding(horizontal: 20);
-  }
-
-  Widget _username() {
-    LoginController loginController = Get.find<LoginController>();
-    return FormBuilderTextField(
-      name: 'username',
-      initialValue: loginController.username.value,
-      decoration: const InputDecoration(labelText: 'Username'),
-      // validator: FormBuilderValidators.compose([
-      //   FormBuilderValidators.maxLength(1, errorText: "Account does not exist"),
-      // ]),
-    ).padding(horizontal: 20, top: 5);
-  }
-
-  Widget _password() {
-    LoginController loginController = Get.find<LoginController>();
-    return FormBuilderTextField(
-      name: 'password',
-      initialValue: loginController.password.value,
-      decoration: const InputDecoration(labelText: 'Password'),
-      obscureText: true,
-      // validator: FormBuilderValidators.compose([
-      //   FormBuilderValidators.maxLength(1, errorText: "Incorrect password"),
-      // ]),
-    ).padding(horizontal: 20, top: 20);
   }
 
   Widget _address() {
@@ -101,12 +59,20 @@ class LoginView extends StatelessWidget {
     return FormBuilderTextField(
       name: 'address',
       initialValue: loginController.address.value,
-      decoration: const InputDecoration(labelText: 'Address'),
-      // validator: FormBuilderValidators.compose([
-      //   FormBuilderValidators.required(),
-      //   FormBuilderValidators.match(RegExp(r"\\d+.\\d+.\\d+.\\d+:\\d+"),
-      //       errorText: "Format: [ip]:[port]"),
-      // ]),
+      decoration: const InputDecoration(
+        labelText: 'Address',
+        hintText: 'e.g. 127.0.0.1:8080',
+        prefixIcon: Icon(Icons.dns_outlined),
+      ),
+      validator: (val) {
+        if (val == null || val.isEmpty) {
+          return 'Address is required';
+        }
+        if (!RegExp(r'^\d+\.\d+\.\d+\.\d+:\d+$').hasMatch(val)) {
+          return 'Format: [ip]:[port]';
+        }
+        return null;
+      },
     ).padding(horizontal: 20, top: 20);
   }
 
@@ -117,7 +83,10 @@ class LoginView extends StatelessWidget {
         if (_formKey.currentState?.saveAndValidate() ?? false)
           {await loginController.toMain(data: _formKey.currentState!.value)}
       },
-      child: const Text('Login'),
+      child: const Text('Connect'),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+      ),
     ).padding(horizontal: 20, top: 40);
   }
 
