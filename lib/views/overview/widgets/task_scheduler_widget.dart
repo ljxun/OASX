@@ -9,6 +9,7 @@ class _SchedulerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The outer card styling is handled by the parent container in overview_view.
     return <Widget>[
       Text(I18n.scheduler.tr,
           textAlign: TextAlign.left,
@@ -39,8 +40,6 @@ class _SchedulerWidget extends StatelessWidget {
       ].toRow(mainAxisAlignment: MainAxisAlignment.center)
     ]
         .toRow(mainAxisAlignment: MainAxisAlignment.spaceBetween)
-        .constrained(height: 48)
-        .paddingOnly(left: 8, right: 8)
-        .card(margin: const EdgeInsets.fromLTRB(10, 0, 10, 10));
+        .constrained(height: 48);
   }
 }

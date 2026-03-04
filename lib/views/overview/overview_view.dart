@@ -15,6 +15,7 @@ import 'package:oasx/service/theme_service.dart';
 import 'package:oasx/utils/time_utils.dart';
 import 'package:oasx/views/args/args_view.dart';
 import 'package:oasx/views/layout/appbar.dart';
+import 'package:oasx/views/overview/widgets/task_tree_view.dart';
 
 import 'package:styled_widget/styled_widget.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -37,50 +38,128 @@ class Overview extends StatelessWidget {
   Widget build(BuildContext context) {
     final overviewController = Get.find<OverviewController>(tag: name);
 
-    Widget buildContent() {
-      if (context.mediaQuery.orientation == Orientation.portrait) {
-        // 竖方向
-        return SingleChildScrollView(
-          child: <Widget>[
-            _SchedulerWidget(controller: overviewController),
-            _RunningWidget(controller: overviewController),
-            _PendingWidget(controller: overviewController),
-            _WaitingWidget(controller: overviewController)
-                .constrained(maxHeight: 200),
-            LogWidget(
-                    key: ValueKey(overviewController.hashCode),
-                    controller: overviewController,
-                    title: I18n.log.tr,
-                    enableCollapse: false)
-                .constrained(maxHeight: 500)
-                .marginOnly(left: 10, top: 10, right: 10)
-          ].toColumn(),
-        );
-      } else {
-        //横方向
-        return <Widget>[
-          // 左边
-          <Widget>[
-            _SchedulerWidget(controller: overviewController),
-            _RunningWidget(controller: overviewController),
-            _PendingWidget(controller: overviewController),
-            Expanded(child: _WaitingWidget(controller: overviewController)),
-          ].toColumn().constrained(width: 300),
-          // 右边
-          LogWidget(
-                  key: ValueKey(overviewController.hashCode),
-                  controller: overviewController,
-                  title: I18n.log.tr,
-                  enableCollapse: false)
-              .marginOnly(right: 10)
-              .expanded()
-        ].toRow();
-      }
+    Widget buildDefaultLayout() {
+      final theme = Theme.of(context);
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Left Column
+          Container(
+            width: 200,
+            margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: TaskTreeView(name: name),
+          ),
+          // Center Column
+          Expanded(
+            flex: 2,
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  _SchedulerWidget(controller: overviewController),
+                  _RunningWidget(controller: overviewController),
+                  _PendingWidget(controller: overviewController),
+                  Expanded(
+                    child: _WaitingWidget(controller: overviewController),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Right Column
+          Expanded(
+            flex: 3,
+            child: LogWidget(
+              key: ValueKey(overviewController.hashCode),
+              controller: overviewController,
+              title: I18n.log.tr,
+              enableCollapse: false,
+            ).marginOnly(right: 10, bottom: 10),
+          ),
+        ],
+      );
+    }
+
+    Widget buildTaskSelectedLayout() {
+      final theme = Theme.of(context);
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Left Column
+          Container(
+            width: 200,
+            margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: TaskTreeView(name: name),
+          ),
+          // Right Column (Args View)
+          Expanded(
+            child: Column(
+              children: [
+                AppBar(
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => overviewController.deselectTask(),
+                  ),
+                  title: Obx(() => Text(overviewController.selectedTaskName.value ?? '')),
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                ),
+                const Expanded(child: Args()),
+              ],
+            ),
+          ),
+        ],
+      );
     }
 
     return Scaffold(
       appBar: buildPlatformAppBar(context),
-      body: buildContent(),
+      body: Obx(() {
+        final isTaskSelected = overviewController.selectedTaskName.value != null;
+        // For now, we only apply this special layout to landscape mode.
+        if (context.mediaQuery.orientation == Orientation.landscape && isTaskSelected) {
+          return buildTaskSelectedLayout();
+        }
+        // Default layout for portrait or when no task is selected.
+        return context.mediaQuery.orientation == Orientation.portrait
+            ? buildPortraitLayout()
+            : buildDefaultLayout();
+      }),
+    );
+  }
+
+  // Keep the portrait layout as it was, for simplicity.
+  Widget buildPortraitLayout() {
+    final overviewController = Get.find<OverviewController>(tag: name);
+    return SingleChildScrollView(
+      child: <Widget>[
+        _SchedulerWidget(controller: overviewController),
+        TaskTreeView(name: name),
+        _RunningWidget(controller: overviewController),
+        _PendingWidget(controller: overviewController),
+        _WaitingWidget(controller: overviewController).constrained(maxHeight: 200),
+        const Args(),
+        LogWidget(
+                key: ValueKey(overviewController.hashCode),
+                controller: overviewController,
+                title: I18n.log.tr,
+                enableCollapse: false)
+            .constrained(maxHeight: 500)
+            .marginOnly(left: 10, top: 10, right: 10)
+      ].toColumn(),
     );
   }
 }

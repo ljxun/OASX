@@ -7,6 +7,8 @@ class OverviewController extends GetxController with LogMixin {
   final isWaitingLoading = false.obs;
   final isPendingLoading = false.obs;
 
+  final selectedTaskName = Rx<String?>(null);
+
   OverviewController({required this.name});
 
   @override
@@ -18,6 +20,19 @@ class OverviewController extends GetxController with LogMixin {
   Future<void> onClose() async {
     // close log
     super.onClose();
+  }
+
+  void selectTask(String taskName) {
+    selectedTaskName.value = taskName;
+    if (!Get.isRegistered<ArgsController>()) {
+      Get.put(ArgsController());
+    }
+    final argsController = Get.find<ArgsController>();
+    argsController.loadGroups(config: name, task: taskName);
+  }
+
+  void deselectTask() {
+    selectedTaskName.value = null;
   }
 
   Future<void> toggleScript() async {
