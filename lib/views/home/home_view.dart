@@ -107,8 +107,6 @@ class HomeView extends GetView<HomeController> {
                       builder: (context, candidateData, rejectedData) {
                         return Draggable<String>(
                           data: scriptModel.name,
-                          // The widget being dragged now has a Material ancestor to ensure correct theming,
-                          // and the card itself provides the rounded shape for the shadow.
                           feedback: Material(
                             type: MaterialType.transparency,
                             child: SizedBox(
@@ -142,7 +140,6 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  // Refactored to remove the outer Material widget and simplify the structure.
   Widget _buildCard(BuildContext context, ScriptModel scriptModel, {bool isDragging = false}) {
     return GestureDetector(
       onTap: () => Get.toNamed('/overview/${scriptModel.name}'),
@@ -156,7 +153,7 @@ class HomeView extends GetView<HomeController> {
       },
       child: Obx(
         () => Card(
-          elevation: isDragging ? 8.0 : 1.0, // Elevation is now controlled directly on the Card
+          elevation: isDragging ? 8.0 : 1.0,
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
@@ -176,7 +173,11 @@ class HomeView extends GetView<HomeController> {
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.power_settings_new_rounded),
-                    isSelected: scriptModel.state.value == ScriptState.running,
+                    color: switch (scriptModel.state.value) {
+                      ScriptState.running => Colors.green,
+                      ScriptState.warning => Colors.amber,
+                      _ => null,
+                    },
                     onPressed: () => controller.toggleScript(scriptModel.name),
                   ),
                 ),
@@ -189,28 +190,30 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
+  // Green line scrolls (value: null), yellow line is static (value: 1.0).
   Widget _buildStatusLine(ScriptModel scriptModel) {
-    final state = scriptModel.state.value;
+    if (scriptModel.state.value != ScriptState.running) {
+      return const SizedBox(height: 4);
+    }
 
-    switch (state) {
-      case ScriptState.running:
-        return LinearProgressIndicator(
-          backgroundColor: Colors.green.withOpacity(0.2),
-          color: Colors.green,
-          minHeight: 4,
-        );
-      case ScriptState.inactive:
-        if (scriptModel.waitingTaskList.isNotEmpty || scriptModel.pendingTaskList.isNotEmpty) {
-          return LinearProgressIndicator(
-            value: 1.0,
-            backgroundColor: Colors.transparent,
-            color: Colors.amber,
-            minHeight: 4,
-          );
-        }
-        return const SizedBox.shrink();
-      default:
-        return const SizedBox.shrink();
+    final hasActiveTask = scriptModel.runningTask.value.taskName.value.isNotEmpty;
+
+    if (hasActiveTask) {
+      // A task is actively running: Green scrolling line.
+      return LinearProgressIndicator(
+        value: null, // Indeterminate (scrolling)
+        backgroundColor: Colors.green.withOpacity(0.2),
+        color: Colors.green,
+        minHeight: 4,
+      );
+    } else {
+      // No active task, but script is on: Static yellow line.
+      return LinearProgressIndicator(
+        value: 1.0, // Static and full
+        backgroundColor: Colors.amber.withOpacity(0.2),
+        color: Colors.amber,
+        minHeight: 4,
+      );
     }
   }
 }
