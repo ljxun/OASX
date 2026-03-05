@@ -9,7 +9,8 @@ import 'package:oasx/views/home/home_controller.dart';
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
 
-  String _getTaskSummary(ScriptModel scriptModel) {
+  // Helper to get the main status line
+  String _getTaskStatusAndName(ScriptModel scriptModel) {
     if (scriptModel.runningTask.value.taskName.value.isNotEmpty) {
       return '运行中 - ${scriptModel.runningTask.value.taskName.value.tr}';
     }
@@ -20,6 +21,19 @@ class HomeView extends GetView<HomeController> {
       return '等待中 - ${scriptModel.waitingTaskList.first.taskName.value.tr}';
     }
     return '空闲'.tr;
+  }
+
+  // Helper to get the time, only for waiting tasks
+  Widget _getTaskTime(BuildContext context, ScriptModel scriptModel) {
+    if (scriptModel.waitingTaskList.isNotEmpty && scriptModel.runningTask.value.taskName.value.isEmpty && scriptModel.pendingTaskList.isEmpty) {
+      final task = scriptModel.waitingTaskList.first;
+      return Text(
+        task.nextRun.value,
+        style: Theme.of(context).textTheme.bodySmall,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    return const SizedBox.shrink(); // Return an empty widget if not applicable
   }
 
   void _showContextMenu(
@@ -65,10 +79,10 @@ class HomeView extends GetView<HomeController> {
           padding: const EdgeInsets.all(10),
           itemCount: controller.scriptModels.length,
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 400, // 每个格子的最大宽度
+            maxCrossAxisExtent: 320, // Reduced width to fit more items
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 3, // 调整宽高比
+            childAspectRatio: 2.8, // Adjusted for new content height
           ),
           itemBuilder: (context, index) {
             final scriptModel = controller.scriptModels[index];
@@ -90,8 +104,17 @@ class HomeView extends GetView<HomeController> {
                     child: ListTile(
                       title:
                           Text(scriptModel.name, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(_getTaskSummary(scriptModel),
-                          overflow: TextOverflow.ellipsis),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _getTaskStatusAndName(scriptModel),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          _getTaskTime(context, scriptModel),
+                        ],
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

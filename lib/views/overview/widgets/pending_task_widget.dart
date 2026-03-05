@@ -71,7 +71,7 @@ class _PendingWidget extends StatelessWidget {
                                   flex: 1,
                                   backgroundColor: Colors.red,
                                   foregroundColor: Colors.white,
-                                  icon: Icons.disabled_by_default_outlined,
+                                  icon: Icons.delete_outline,
                                   autoClose: false,
                                 ),
                               ],

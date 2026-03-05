@@ -102,44 +102,36 @@ class TaskItemView extends StatelessWidget {
   }
 
   Widget _action(BuildContext context) {
-    return OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.all(0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-            onPressed: () async {
-              double maxWidth = min(750, Get.width * 0.9);
-              double maxHeight = Get.height * 0.7;
-              final argsController = Get.find<ArgsController>();
-              Get.defaultDialog(
-                  title: '${model.taskName.value.tr}${I18n.setting.tr}',
-                  content: FutureBuilder<void>(
-                      future: argsController.loadGroups(
-                          config: model.scriptName, task: model.taskName.value),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        } else if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        } else {
-                          return Args(
-                            scriptName: model.scriptName,
-                            taskName: model.taskName.value,
-                            groupDraggable: false,
-                          ).constrained(
-                            minWidth: maxWidth,
-                            minHeight: maxHeight,
-                            maxWidth: maxWidth,
-                            maxHeight: maxHeight,
-                          );
-                        }
-                      }));
-            },
-            child: Text(I18n.setting.tr,
-                style: Theme.of(context).textTheme.bodySmall))
-        .constrained(maxWidth: 100, maxHeight: 30);
+    return IconButton(
+      icon: const Icon(Icons.settings),
+      onPressed: () async {
+        double maxWidth = min(750, Get.width * 0.9);
+        double maxHeight = Get.height * 0.7;
+        final argsController = Get.find<ArgsController>();
+        Get.defaultDialog(
+            title: '${model.taskName.value.tr}${I18n.setting.tr}',
+            content: FutureBuilder<void>(
+                future: argsController.loadGroups(
+                    config: model.scriptName, task: model.taskName.value),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return Args(
+                      scriptName: model.scriptName,
+                      taskName: model.taskName.value,
+                      groupDraggable: false,
+                    ).constrained(
+                      minWidth: maxWidth,
+                      minHeight: maxHeight,
+                      maxWidth: maxWidth,
+                      maxHeight: maxHeight,
+                    );
+                  }
+                }));
+      },
+    );
   }
 }
