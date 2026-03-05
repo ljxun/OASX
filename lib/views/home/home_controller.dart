@@ -12,6 +12,15 @@ class HomeController extends GetxController {
   List<ScriptModel> get scriptModels =>
       _scriptService.scriptModelMap.values.toList();
 
+  // New method to handle reordering from the view
+  void onReorder(int oldIndex, int newIndex) {
+    // If the item is moved to a later position, the new index needs to be adjusted.
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    _scriptService.reorderScripts(oldIndex, newIndex);
+  }
+
   void toggleScript(String scriptName) {
     final script = _scriptService.findScriptModel(scriptName);
     if (script == null) return;

@@ -89,67 +89,52 @@ class HomeView extends GetView<HomeController> {
           ),
           Expanded(
             child: Obx(
-              () => GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 100.0), // Side margins set to 100
-                itemCount: controller.scriptModels.length,
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 350, // Increased to make 3 columns the default on most screens
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 2.0,
-                ),
-                itemBuilder: (context, index) {
-                  final scriptModel = controller.scriptModels[index];
-                  return GestureDetector(
-                    onTap: () => Get.toNamed('/overview/${scriptModel.name}'),
-                    onSecondaryTapDown: (details) {
-                      if (PlatformUtils.isMobile) return;
-                      _showContextMenu(
-                          context, details.globalPosition, scriptModel.name);
-                    },
-                    onLongPressStart: (details) {
-                      if (!PlatformUtils.isMobile) return;
-                      _showContextMenu(
-                          context, details.globalPosition, scriptModel.name);
-                    },
-                    child: Card(
-                      child: Obx(
-                        () => Center(
-                          child: ListTile(
-                            title: Text(scriptModel.name,
-                                overflow: TextOverflow.ellipsis),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _getTaskStatusAndName(scriptModel),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                _getTaskTime(context, scriptModel),
-                              ],
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildStatusIndicator(scriptModel.state.value),
-                                IconButton(
-                                  icon: const Icon(
-                                      Icons.power_settings_new_rounded),
-                                  isSelected: scriptModel.state.value ==
-                                      ScriptState.running,
-                                  onPressed: () =>
-                                      controller.toggleScript(scriptModel.name),
-                                ),
-                              ],
+              () {
+                final scriptModels = controller.scriptModels;
+                return GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 100.0),
+                  itemCount: scriptModels.length,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 350,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 2.0,
+                  ),
+                  itemBuilder: (context, index) {
+                    final scriptModel = scriptModels[index];
+                    
+                    return DragTarget<String>(
+                      builder: (context, candidateData, rejectedData) {
+                        return Draggable<String>(
+                          data: scriptModel.name,
+                          // The widget being dragged now has a Material ancestor to ensure correct theming,
+                          // and the card itself provides the rounded shape for the shadow.
+                          feedback: Material(
+                            type: MaterialType.transparency,
+                            child: SizedBox(
+                              width: 350,
+                              child: _buildCard(context, scriptModel, isDragging: true),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: _buildCard(context, scriptModel),
+                          ),
+                          child: _buildCard(context, scriptModel),
+                        );
+                      },
+                      onWillAccept: (data) => data != scriptModel.name,
+                      onAccept: (draggedItemName) {
+                        final oldIndex = scriptModels.indexWhere((m) => m.name == draggedItemName);
+                        final newIndex = index;
+                        if (oldIndex != -1) {
+                          controller.onReorder(oldIndex, newIndex);
+                        }
+                      },
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
@@ -157,18 +142,75 @@ class HomeView extends GetView<HomeController> {
     );
   }
 
-  Widget _buildStatusIndicator(ScriptState state) {
-    return switch (state) {
-      ScriptState.running => const SpinKitChasingDots(
-          color: Colors.green,
-          size: 22,
+  // Refactored to remove the outer Material widget and simplify the structure.
+  Widget _buildCard(BuildContext context, ScriptModel scriptModel, {bool isDragging = false}) {
+    return GestureDetector(
+      onTap: () => Get.toNamed('/overview/${scriptModel.name}'),
+      onSecondaryTapDown: (details) {
+        if (PlatformUtils.isMobile) return;
+        _showContextMenu(context, details.globalPosition, scriptModel.name);
+      },
+      onLongPressStart: (details) {
+        if (!PlatformUtils.isMobile) return;
+        _showContextMenu(context, details.globalPosition, scriptModel.name);
+      },
+      child: Obx(
+        () => Card(
+          elevation: isDragging ? 8.0 : 1.0, // Elevation is now controlled directly on the Card
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListTile(
+                  title: Text(scriptModel.name, overflow: TextOverflow.ellipsis),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _getTaskStatusAndName(scriptModel),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      _getTaskTime(context, scriptModel),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.power_settings_new_rounded),
+                    isSelected: scriptModel.state.value == ScriptState.running,
+                    onPressed: () => controller.toggleScript(scriptModel.name),
+                  ),
+                ),
+              ),
+              _buildStatusLine(scriptModel),
+            ],
+          ),
         ),
-      ScriptState.inactive =>
-        const Icon(Icons.donut_large, size: 26, color: Colors.grey),
-      ScriptState.warning =>
-        const SpinKitDoubleBounce(color: Colors.orange, size: 26),
-      ScriptState.updating => const Icon(Icons.browser_updated_rounded,
-          size: 26, color: Colors.blue),
-    };
+      ),
+    );
+  }
+
+  Widget _buildStatusLine(ScriptModel scriptModel) {
+    final state = scriptModel.state.value;
+
+    switch (state) {
+      case ScriptState.running:
+        return LinearProgressIndicator(
+          backgroundColor: Colors.green.withOpacity(0.2),
+          color: Colors.green,
+          minHeight: 4,
+        );
+      case ScriptState.inactive:
+        if (scriptModel.waitingTaskList.isNotEmpty || scriptModel.pendingTaskList.isNotEmpty) {
+          return LinearProgressIndicator(
+            value: 1.0,
+            backgroundColor: Colors.transparent,
+            color: Colors.amber,
+            minHeight: 4,
+          );
+        }
+        return const SizedBox.shrink();
+      default:
+        return const SizedBox.shrink();
+    }
   }
 }

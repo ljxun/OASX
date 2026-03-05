@@ -10,4 +10,5 @@ enum StorageKey {
   temporaryDirectory,
   autoScriptList,
   autoDeploy,
+  scriptOrder,
 }

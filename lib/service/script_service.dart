@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'dart:async';
 
 import 'package:get/get.dart';
@@ -22,9 +21,16 @@ class ScriptService extends GetxService {
 
   @override
   Future<void> onInit() async {
-    final scriptList = await ApiClient().getScriptList();
-    if (scriptList.isNotEmpty) {
-      await Future.wait(scriptList.map((name) => connectScript(name)));
+    // Load the saved script order first
+    final savedOrder = _storage.read<List<dynamic>>(StorageKey.scriptOrder.name)?.map((e) => e.toString()).toList() ?? [];
+    
+    final scriptListFromApi = await ApiClient().getScriptList();
+
+    // Sort the list from the API based on the saved order
+    final sortedScriptList = _sortScripts(scriptListFromApi, savedOrder);
+
+    if (sortedScriptList.isNotEmpty) {
+      await Future.wait(sortedScriptList.map((name) => connectScript(name)));
     }
     autoScriptList.value =
         ((jsonDecode(_storage.read(StorageKey.autoScriptList.name)) as List?) ??
@@ -32,6 +38,22 @@ class ScriptService extends GetxService {
             .map((e) => e.toString())
             .toList();
     super.onInit();
+  }
+
+  List<String> _sortScripts(List<String> scriptList, List<String> savedOrder) {
+    final List<String> sortedList = [];
+    final Set<String> scriptSet = Set.from(scriptList);
+
+    // Add scripts that are in the saved order and still exist
+    for (final name in savedOrder) {
+      if (scriptSet.contains(name)) {
+        sortedList.add(name);
+        scriptSet.remove(name);
+      }
+    }
+    // Add any new scripts that were not in the saved order
+    sortedList.addAll(scriptSet);
+    return sortedList;
   }
 
   @override
@@ -146,6 +168,21 @@ class ScriptService extends GetxService {
   bool isRunning(String scriptName) {
     return scriptModelMap.containsKey(scriptName) &&
         scriptModelMap[scriptName]!.state.value == ScriptState.running;
+  }
+
+  // New method to handle reordering
+  void reorderScripts(int oldIndex, int newIndex) {
+    final orderedKeys = scriptModelMap.keys.toList();
+    final movedItem = orderedKeys.removeAt(oldIndex);
+    orderedKeys.insert(newIndex, movedItem);
+
+    final newMap = <String, ScriptModel>{};
+    for (final key in orderedKeys) {
+      newMap[key] = scriptModelMap[key]!;
+    }
+
+    scriptModelMap.value = newMap;
+    _storage.write(StorageKey.scriptOrder.name, orderedKeys);
   }
 
   // 自动启动脚本
