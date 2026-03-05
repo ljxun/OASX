@@ -9,12 +9,13 @@ class _SchedulerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
           children: [
             Text(I18n.scheduler.tr,
-                textAlign: TextAlign.left,
                 style: Theme.of(context).textTheme.titleMedium),
             const Spacer(),
             Obx(() {
@@ -23,8 +24,8 @@ class _SchedulerWidget extends StatelessWidget {
                     color: Colors.green,
                     size: 22,
                   ),
-                ScriptState.inactive =>
-                  const Icon(Icons.donut_large, size: 26, color: Colors.grey),
+                ScriptState.inactive => const Icon(Icons.donut_large,
+                    size: 26, color: Colors.grey),
                 ScriptState.warning =>
                   const SpinKitDoubleBounce(color: Colors.orange, size: 26),
                 ScriptState.updating => const Icon(
@@ -43,8 +44,7 @@ class _SchedulerWidget extends StatelessWidget {
             }),
           ],
         ),
-        const Divider(),
-      ],
+      ),
     );
   }
 }

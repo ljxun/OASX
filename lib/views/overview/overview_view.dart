@@ -55,14 +55,9 @@ class Overview extends StatelessWidget {
           ),
           // Center Column
           Expanded(
-            flex: 1, // Changed from 2 to 1
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: Column(
                 children: [
                   _SchedulerWidget(controller: overviewController),
@@ -77,7 +72,7 @@ class Overview extends StatelessWidget {
           ),
           // Right Column
           Expanded(
-            flex: 2, // Changed from 3 to 2
+            flex: 2,
             child: LogWidget(
               key: ValueKey(overviewController.hashCode),
               controller: overviewController,
@@ -129,11 +124,9 @@ class Overview extends StatelessWidget {
       appBar: buildPlatformAppBar(context),
       body: Obx(() {
         final isTaskSelected = overviewController.selectedTaskName.value != null;
-        // For now, we only apply this special layout to landscape mode.
         if (context.mediaQuery.orientation == Orientation.landscape && isTaskSelected) {
           return buildTaskSelectedLayout();
         }
-        // Default layout for portrait or when no task is selected.
         return context.mediaQuery.orientation == Orientation.portrait
             ? buildPortraitLayout()
             : buildDefaultLayout();
@@ -141,7 +134,6 @@ class Overview extends StatelessWidget {
     );
   }
 
-  // Keep the portrait layout as it was, for simplicity.
   Widget buildPortraitLayout() {
     final overviewController = Get.find<OverviewController>(tag: name);
     return SingleChildScrollView(
