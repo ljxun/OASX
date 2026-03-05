@@ -25,7 +25,9 @@ class HomeView extends GetView<HomeController> {
 
   // Helper to get the time, only for waiting tasks
   Widget _getTaskTime(BuildContext context, ScriptModel scriptModel) {
-    if (scriptModel.waitingTaskList.isNotEmpty && scriptModel.runningTask.value.taskName.value.isEmpty && scriptModel.pendingTaskList.isEmpty) {
+    if (scriptModel.waitingTaskList.isNotEmpty &&
+        scriptModel.runningTask.value.taskName.value.isEmpty &&
+        scriptModel.pendingTaskList.isEmpty) {
       final task = scriptModel.waitingTaskList.first;
       return Text(
         task.nextRun.value,
@@ -74,67 +76,83 @@ class HomeView extends GetView<HomeController> {
           ),
         ],
       ),
-      body: Obx(
-        () => GridView.builder(
-          padding: const EdgeInsets.all(10),
-          itemCount: controller.scriptModels.length,
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 320, // Reduced width to fit more items
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 2.8, // Adjusted for new content height
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Center(
+              child: Text(
+                '阴阳师助手',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ),
           ),
-          itemBuilder: (context, index) {
-            final scriptModel = controller.scriptModels[index];
-            return GestureDetector(
-              onTap: () => Get.toNamed('/overview/${scriptModel.name}'),
-              onSecondaryTapDown: (details) {
-                if (PlatformUtils.isMobile) return;
-                _showContextMenu(
-                    context, details.globalPosition, scriptModel.name);
-              },
-              onLongPressStart: (details) {
-                if (!PlatformUtils.isMobile) return;
-                _showContextMenu(
-                    context, details.globalPosition, scriptModel.name);
-              },
-              child: Card(
-                child: Obx(
-                  () => Center(
-                    child: ListTile(
-                      title:
-                          Text(scriptModel.name, overflow: TextOverflow.ellipsis),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _getTaskStatusAndName(scriptModel),
-                            overflow: TextOverflow.ellipsis,
+          Expanded(
+            child: Obx(
+              () => GridView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 100.0), // Side margins set to 100
+                itemCount: controller.scriptModels.length,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 350, // Increased to make 3 columns the default on most screens
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 2.0,
+                ),
+                itemBuilder: (context, index) {
+                  final scriptModel = controller.scriptModels[index];
+                  return GestureDetector(
+                    onTap: () => Get.toNamed('/overview/${scriptModel.name}'),
+                    onSecondaryTapDown: (details) {
+                      if (PlatformUtils.isMobile) return;
+                      _showContextMenu(
+                          context, details.globalPosition, scriptModel.name);
+                    },
+                    onLongPressStart: (details) {
+                      if (!PlatformUtils.isMobile) return;
+                      _showContextMenu(
+                          context, details.globalPosition, scriptModel.name);
+                    },
+                    child: Card(
+                      child: Obx(
+                        () => Center(
+                          child: ListTile(
+                            title: Text(scriptModel.name,
+                                overflow: TextOverflow.ellipsis),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _getTaskStatusAndName(scriptModel),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                _getTaskTime(context, scriptModel),
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildStatusIndicator(scriptModel.state.value),
+                                IconButton(
+                                  icon: const Icon(
+                                      Icons.power_settings_new_rounded),
+                                  isSelected: scriptModel.state.value ==
+                                      ScriptState.running,
+                                  onPressed: () =>
+                                      controller.toggleScript(scriptModel.name),
+                                ),
+                              ],
+                            ),
                           ),
-                          _getTaskTime(context, scriptModel),
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildStatusIndicator(scriptModel.state.value),
-                          IconButton(
-                            icon: const Icon(Icons.power_settings_new_rounded),
-                            isSelected:
-                                scriptModel.state.value == ScriptState.running,
-                            onPressed: () =>
-                                controller.toggleScript(scriptModel.name),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
