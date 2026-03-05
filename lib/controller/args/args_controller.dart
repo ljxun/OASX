@@ -8,9 +8,12 @@ class ArgsController extends GetxController {
   static const String nextRunArg = 'next_run';
   static const String enableArg = 'enable';
 
+  // Store the current context
+  String currentConfig = '';
+  String currentTask = '';
+
   @override
   void onInit() {
-    // loadGroups();
     super.onInit();
   }
 
@@ -27,6 +30,10 @@ class ArgsController extends GetxController {
 
   /// 加载groups数据
   Future<void> loadGroups({String config = "", String task = ""}) async {
+    // Store the context when loading
+    currentConfig = config;
+    currentTask = task;
+
     // 清空缓存数据
     groupsName.value = [];
     groupsData.value = {};
@@ -60,11 +67,16 @@ class ArgsController extends GetxController {
 
   Future<bool> setArgument(String? config, String? task, String group,
       String argument, String type, var value) async {
-    if (config == null || task == null || config.isEmpty || task.isEmpty) {
-      NavCtrl navCtrl = Get.find<NavCtrl>();
-      config = navCtrl.selectedScript.value;
-      task = navCtrl.selectedMenu.value;
+    // Use the stored context if the arguments are null or empty
+    config ??= currentConfig;
+    task ??= currentTask;
+
+    if (config.isEmpty || task.isEmpty) {
+      // Still need a fallback or error handling if the context was never set
+      printError(info: "ArgsController: config or task is empty on save.");
+      return false;
     }
+
     final ret = await ApiClient()
         .putScriptArg(config, task, group, argument, type, value);
     // 设置的是调度器的内容,则自动更新调度器
