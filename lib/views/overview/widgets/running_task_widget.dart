@@ -59,8 +59,6 @@ class _RunningWidget extends StatelessWidget {
         );
       }).clipRect()
     ]
-        .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-        .padding(top: 8, bottom: 0, left: 8, right: 8)
-        .card(margin: const EdgeInsets.fromLTRB(10, 0, 10, 10));
+        .toColumn(crossAxisAlignment: CrossAxisAlignment.start);
   }
 }

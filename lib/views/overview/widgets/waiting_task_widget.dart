@@ -9,8 +9,6 @@ class _WaitingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The outer card and padding are now handled in the overview_view.
-    // This widget just needs to provide the content that fills the available space.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -18,7 +16,7 @@ class _WaitingWidget extends StatelessWidget {
             textAlign: TextAlign.left,
             style: Theme.of(context).textTheme.titleMedium),
         const Divider(),
-        Expanded( // This Expanded is crucial.
+        Expanded(
           child: DragTarget<Map<String, dynamic>>(
             onWillAcceptWithDetails: (details) {
               if (details.data.isEmpty ||
@@ -52,7 +50,8 @@ class _WaitingWidget extends StatelessWidget {
                           extentRatio: 0.2,
                           children: [
                             SlidableAction(
-                              onPressed: (BuildContext slidableContext) async {
+                              onPressed:
+                                  (BuildContext slidableContext) async {
                                 final ret =
                                     await controller.disableScriptTask(model);
                                 if (ret) {

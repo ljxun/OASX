@@ -55,7 +55,7 @@ class Overview extends StatelessWidget {
           ),
           // Center Column
           Expanded(
-            flex: 2,
+            flex: 1, // Changed from 2 to 1
             child: Container(
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               padding: const EdgeInsets.all(8),
@@ -77,7 +77,7 @@ class Overview extends StatelessWidget {
           ),
           // Right Column
           Expanded(
-            flex: 3,
+            flex: 2, // Changed from 3 to 2
             child: LogWidget(
               key: ValueKey(overviewController.hashCode),
               controller: overviewController,

@@ -82,8 +82,6 @@ class _PendingWidget extends StatelessWidget {
         },
       ),
     ]
-        .toColumn(crossAxisAlignment: CrossAxisAlignment.start)
-        .paddingAll(8)
-        .card(margin: const EdgeInsets.fromLTRB(10, 0, 10, 10));
+        .toColumn(crossAxisAlignment: CrossAxisAlignment.start);
   }
 }
