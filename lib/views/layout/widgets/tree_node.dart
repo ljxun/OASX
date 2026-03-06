@@ -6,110 +6,105 @@ import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/views/overview/overview_view.dart';
 import 'package:styled_widget/styled_widget.dart';
 
-// 第一级 节点
 class TreeNode1 extends StatefulWidget {
   final String title;
   final void Function(String title)? onTap;
   final List<String> children;
+  final int level;
 
-  const TreeNode1(
-      {super.key,
-      required this.title,
-      required this.onTap,
-      required this.children});
+  const TreeNode1({
+    super.key,
+    required this.title,
+    required this.onTap,
+    required this.children,
+    this.level = 0,
+  });
 
   @override
   TreeNode1State createState() => TreeNode1State();
 }
 
 class TreeNode1State extends State<TreeNode1> {
-  // 判断是否没有后续节点
-  bool get _isLeaf {
-    return widget.children.isEmpty || widget.children == [];
-  }
-
-  // 判断是否已经打开
+  bool get _isLeaf => widget.children.isEmpty;
   bool _isExpanded = false;
-
-  // 鼠标是否在这个区域内
-  bool _isHover = false;
 
   @override
   Widget build(BuildContext context) {
-    Icon icon = _isExpanded
-        ? const Icon(Icons.expand_more)
-        : const Icon(Icons.chevron_right);
-    Text title = _isHover
-        ? Text(widget.title.tr, style: const TextStyle(color: Colors.blue))
-        : Text(widget.title.tr);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        MouseRegion(
-                // 鼠标进入的时候 高亮
-                onEnter: (event) {
-                  setState(() {
-                    _isHover = true;
-                  });
-                },
-                // 鼠标离开的时候 正常
-                onExit: (event) {
-                  setState(() {
-                    _isHover = false;
-                  });
-                },
-                child: buildChild(context, title, icon))
-            // .alignment(Alignment.centerLeft)
-            .constrained(width: 180)
-            .alignment(Alignment.topLeft),
-        if (_isExpanded && !_isLeaf)
-          Column(
-            children: widget.children
-                .map((e) => TreeNode1(
-                      title: e,
-                      onTap: widget.onTap,
-                      children: const [],
-                    ))
-                .toList(),
-          ),
+        _buildNodeTile(),
+        if (_isExpanded && !_isLeaf) _buildChildNodes(),
       ],
     );
   }
 
-  Widget buildChild(BuildContext context, Text title, Icon icon) {
+  Widget _buildNodeTile() {
+    final indent = 20.0 * widget.level;
+    final tile = ListTile(
+      contentPadding: EdgeInsets.only(left: indent + 16.0, right: 8.0),
+      leading: _isLeaf ? null : _buildExpansionIcon(),
+      title: Text(widget.title.tr),
+      onTap: _handlePress,
+      dense: true,
+      visualDensity: VisualDensity.compact,
+    );
+
     if (_isLeaf) {
       return Obx(() {
         return LongPressDraggable<Map<String, dynamic>>(
           data: {
             'model': TaskItemModel(
-                Get.find<NavCtrl>().selectedScript.value, widget.title, ''),
+              Get.find<NavCtrl>().selectedScript.value,
+              widget.title,
+              '',
+            ),
             'source': 'treeNode'
           },
           feedback: _buildFeedback(context),
-          child: TextButton(
-              style: ButtonStyle(
-                padding:
-                    WidgetStateProperty.all(const EdgeInsets.only(left: 20)),
-                alignment: Alignment.centerLeft,
-              ),
-              onPressed: _handlePress,
-              child: title),
+          child: tile,
         );
       });
     }
-    return TextButton.icon(
-            style: const ButtonStyle(alignment: Alignment.centerLeft),
-            onPressed: _handlePress,
-            icon: icon,
-            label: title);
+    return tile;
+  }
+
+  Widget _buildExpansionIcon() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      transitionBuilder: (child, animation) {
+        return RotationTransition(
+          turns: child.key == const ValueKey('icon_add')
+              ? Tween<double>(begin: -0.25, end: 0).animate(animation)
+              : Tween<double>(begin: 0.25, end: 0).animate(animation),
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      child: _isExpanded
+          ? const Icon(Icons.remove, key: ValueKey('icon_remove'), size: 20)
+          : const Icon(Icons.add, key: ValueKey('icon_add'), size: 20),
+    );
+  }
+
+  Widget _buildChildNodes() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widget.children
+          .map((e) => TreeNode1(
+                title: e,
+                onTap: widget.onTap,
+                children: const [],
+                level: widget.level + 1,
+              ))
+          .toList(),
+    );
   }
 
   void _handlePress() {
     if (_isLeaf) {
       widget.onTap?.call(widget.title);
     } else {
-      setState(() {
-        _isExpanded = !_isExpanded;
-      });
+      setState(() => _isExpanded = !_isExpanded);
     }
   }
 
@@ -117,41 +112,24 @@ class TreeNode1State extends State<TreeNode1> {
     final themeService = Get.find<ThemeService>();
     return Material(
       color: Colors.transparent,
-      child:
-          Text(widget.title.tr, style: Theme.of(context).textTheme.titleMedium)
-              .decorated(
-                color: themeService.isDarkMode
-                    ? Colors.blueGrey.shade700
-                    : Colors.blueGrey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              )
-              .width(150)
-              .height(30)
-              .paddingAll(8)
-              .opacity(0.8),
+      child: Text(widget.title.tr, style: Theme.of(context).textTheme.titleMedium)
+          .decorated(
+            color: themeService.isDarkMode
+                ? Colors.blueGrey.shade700
+                : Colors.blueGrey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 6,
+                offset: Offset(2, 2),
+              ),
+            ],
+          )
+          .width(150)
+          .height(30)
+          .paddingAll(8)
+          .opacity(0.8),
     );
   }
 }
-
-// 第二级 节点 ------------------------------------------------------------------
-// class TreeNode2 extends StatefulWidget {
-//   final String title;
-//   final void Function(String title)? onTap;
-
-//   const TreeNode2({super.key, required this.title, required this.onTap});
-
-//   @override
-//   TreeNode2State createState() => TreeNode2State();
-// }
-
-// class TreeNode2State extends State<TreeNode1> {
-//   @override
-//   Widget build(BuildContext context) {}
-// }
