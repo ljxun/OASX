@@ -171,7 +171,8 @@ class HomeView extends GetView<HomeController> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      if (scriptModel.waitingTaskList.isNotEmpty &&
+                      if (scriptModel.state.value == ScriptState.running &&
+                          scriptModel.waitingTaskList.isNotEmpty &&
                           scriptModel.runningTask.value.taskName.value.isEmpty &&
                           scriptModel.pendingTaskList.isEmpty) ...[
                         _getTaskTime(context, scriptModel, subtitleStyle),
@@ -179,6 +180,13 @@ class HomeView extends GetView<HomeController> {
                         _CountdownTimer(
                           targetTime: scriptModel.waitingTaskList.first.nextRun.value,
                           style: subtitleStyle,
+                        ),
+                      ],
+                      if (scriptModel.pendingTaskList.isNotEmpty) ...[
+                        Text(
+                          '队列中 - ${scriptModel.pendingTaskList.first.taskName.value.tr}',
+                          style: subtitleStyle,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ]
                     ],
