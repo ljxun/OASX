@@ -44,6 +44,7 @@ class TreeNode1State extends State<TreeNode1> {
   Widget _buildNodeTile() {
     final indent = 20.0 * widget.level;
     final isSelected = widget.title == widget.selectedTask;
+
     final tile = ListTile(
       contentPadding: EdgeInsets.only(left: indent + 16.0, right: 8.0),
       leading: _isLeaf ? null : _buildExpansionIcon(),
