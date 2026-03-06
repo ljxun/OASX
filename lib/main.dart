@@ -48,7 +48,7 @@ class OASXApp extends StatelessWidget {
         translations: Messages(),
         locale: localeService.currentLocale,
         fallbackLocale: localeService.fallbackLocale, //语言选择无效时，备用语言
-        title: 'OASX',
+        title: '',
         onInit: onInit,
         initialRoute: Routes.initial,
         getPages: Routes.routes,

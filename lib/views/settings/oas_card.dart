@@ -6,7 +6,7 @@ class OasSettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SettingCard(
-      title: 'OAS${I18n.setting.tr}',
+      title: '${I18n.setting.tr}',
       items: [
         SettingItem(
             left: Text(I18n.notify_test.tr),

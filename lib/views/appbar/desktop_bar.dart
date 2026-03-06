@@ -22,7 +22,7 @@ class DesktopAppbar extends StatelessWidget {
   Widget _title() {
     return <Widget>[
       Image.asset("assets/images/Icon-app.png"),
-      const Text("OASX"),
+      const Text("YYS"),
       const Text("free"),
     ].toRow();
   }

@@ -20,7 +20,7 @@ class SystemTrayService extends GetxService {
         ? 'assets/images/Icon-app.ico'
         : 'assets/images/Icon-app.png';
     await _systemTray.initSystemTray(
-      title: "OASX",
+      title: "",
       iconPath: iconPath,
     );
     await _rebuildMenu();
