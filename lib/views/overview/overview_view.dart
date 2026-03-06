@@ -45,10 +45,26 @@ class Overview extends StatelessWidget {
           // Left Column
           SizedBox(
             width: 200,
-            child: Card(
-              margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
-              clipBehavior: Clip.antiAlias,
-              child: TaskTreeView(name: name),
+            child: DragTarget<Map<String, dynamic>>(
+              builder: (context, candidateData, rejectedData) {
+                bool isHovering = candidateData.isNotEmpty;
+                return Card(
+                  margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+                  clipBehavior: Clip.antiAlias,
+                  color: isHovering
+                      ? Colors.red.withOpacity(0.2)
+                      : Theme.of(context).cardColor,
+                  child: TaskTreeView(name: name),
+                );
+              },
+              onWillAccept: (data) {
+                return data != null &&
+                    (data['source'] == 'pending' || data['source'] == 'waiting');
+              },
+              onAccept: (data) {
+                final task = data['model'] as TaskItemModel;
+                overviewController.disableScriptTask(task);
+              },
             ),
           ),
           // Center Column
