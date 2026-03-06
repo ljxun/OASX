@@ -39,19 +39,17 @@ class Overview extends StatelessWidget {
     final overviewController = Get.find<OverviewController>(tag: name);
 
     Widget buildDefaultLayout() {
-      final theme = Theme.of(context);
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Left Column
-          Container(
+          SizedBox(
             width: 200,
-            margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(8),
+            child: Card(
+              margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+              clipBehavior: Clip.antiAlias,
+              child: TaskTreeView(name: name),
             ),
-            child: TaskTreeView(name: name),
           ),
           // Center Column
           Expanded(
@@ -85,19 +83,17 @@ class Overview extends StatelessWidget {
     }
 
     Widget buildTaskSelectedLayout() {
-      final theme = Theme.of(context);
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Left Column
-          Container(
+          SizedBox(
             width: 200,
-            margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: BorderRadius.circular(8),
+            child: Card(
+              margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+              clipBehavior: Clip.antiAlias,
+              child: TaskTreeView(name: name),
             ),
-            child: TaskTreeView(name: name),
           ),
           // Right Column (Args View)
           const Expanded(
