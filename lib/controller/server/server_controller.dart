@@ -14,7 +14,7 @@ class ServerController extends GetxController with LogMixin {
   @override
   void onInit() {
     rootPathServer.value = _storage.read(StorageKey.rootPathServer.name) ??
-        'Please set OAS root path';
+        'Please set YYS root path';
     autoLoginAfterDeploy.value =
         _storage.read(StorageKey.autoLoginAfterDeploy.name) ?? false;
     shell = getShell;

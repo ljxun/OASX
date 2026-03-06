@@ -18,7 +18,7 @@ final Map<String, String> _us_ui = {
   I18n.task_setting: 'Settings',
   I18n.notify_test_help: 'Please refer to the documentation [Message Push] to fill in the relevant configuration',
   I18n.root_path_server_help:
-  'OASX and OAS are two different things. Do not confuse them, do not put them in the same directory, do not use spaces, do not use Chinese characters, and do not use overly long paths',
+  'Do not confuse them, do not put them in the same directory, do not use spaces, do not use Chinese characters, and do not use overly long paths',
   I18n.install_oas_help: 'This will download and decompress from Github. Please maintain a stable network connection. At the same time, this directory will be cleared',
   I18n.config_update_tip: 'The current script is running, please stop it before making modifications.',
   I18n.minimize_to_system_tray_help: 'Minimized to the system tray when closing a window',

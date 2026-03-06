@@ -23,7 +23,7 @@ class I18n {
   static const String network_error_code = 'Network Error Code';
   static const String network_connect_timeout = 'Network Connect Timeout';
   static const String network_not_found = 'Network Not Found';
-  static const String network_server_error = 'OAS internal server error';
+  static const String network_server_error = 'internal server error';
   static const String scheduler = 'scheduler';
   static const String running = 'Running';
   static const String pending = 'Pendings';
@@ -45,13 +45,13 @@ class I18n {
   static const String current_version = 'Current Version';
   static const String latest_version = 'Latest Version';
   static const String find_new_version = 'Find New Version';
-  static const String kill_oas_server = 'Kill OAS server';
-  static const String are_you_sure_kill = 'Are you sure kill OAS server';
+  static const String kill_oas_server = 'Kill server';
+  static const String are_you_sure_kill = 'Are you sure kill server';
   static const String kill_server_success = 'Kill server success';
   static const String kill_server_failure = 'Kill server failure';
-  static const String kill_server_failure_msg = 'Please check if the OAS service is turned off and then manually log out';
-  static const String find_oas_new_version = 'Find OAS new version';
-  static const String oas_latest_version = 'OAS latest version';
+  static const String kill_server_failure_msg = 'Please check if the service is turned off and then manually log out';
+  static const String find_oas_new_version = 'Find new version';
+  static const String oas_latest_version = 'latest version';
   static const String current_branch = 'Current branch';
   static const String detailed_submission_history =
       'Detailed submission history';
@@ -65,11 +65,11 @@ class I18n {
   static const String root_path_server_help = 'Service root path help';
   static const String root_path_incorrect = 'Root path incorrect';
   static const String root_path_correct = 'Root path incorrect help';
-  static const String install_oas_now = 'Now install OAS';
-  static const String install_oas_success = 'Install OAS success';
-  static const String install_oas_failure = 'Install OAS failure';
-  static const String install_oas_from_github = 'Install OAS from GitHub';
-  static const String install_oas_help = 'Install OAS from local';
+  static const String install_oas_now = 'Now install';
+  static const String install_oas_success = 'Install success';
+  static const String install_oas_failure = 'Install failure';
+  static const String install_oas_from_github = 'Install from GitHub';
+  static const String install_oas_help = 'Install from local';
   static const String setup_deploy = 'Setup deploy';
   static const String setup_log = 'Setup log';
   static const String rename = 'Rename';
@@ -99,7 +99,7 @@ class I18n {
   static const String start_success = 'Start success';
   static const String auto_deploy = 'Auto deploy';
   static const String login_error = 'Login error';
-  static const String login_error_msg = 'The OAS connection fails, confirm that OAS is running';
+  static const String login_error_msg = 'The connection fails, confirm that is running';
   static const String success = 'Success';
 
   // 菜单项相关
