@@ -9,6 +9,12 @@ import 'package:oasx/utils/platform_utils.dart';
 
 Widget getTitle() {
   var routePath = Get.currentRoute;
+
+  // Handle dynamic overview pages
+  if (routePath.startsWith('/overview/')) {
+    return const OverviewTitle();
+  }
+
   return switch (routePath) {
     '/main' => const MainTitleBar(),
     '/login' => const LoginTitle(),
@@ -17,6 +23,38 @@ Widget getTitle() {
     _ => const SettingTitle(),
   };
 }
+
+// New Title Widget for the Overview Page
+class OverviewTitle extends StatelessWidget {
+  const OverviewTitle({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final String scriptName = Get.parameters['name'] ?? 'Overview';
+    
+    bool backButton = switch (Theme.of(context).platform) {
+      TargetPlatform.android => false, // AppBar will handle it automatically
+      TargetPlatform.iOS => false, // AppBar will handle it automatically
+      _ => true,
+    };
+
+    return <Widget>[
+      if (backButton) BackButton(onPressed: () => Get.back()),
+      Image.asset("assets/images/Icon-app.png", height: 30, width: 30),
+      const SizedBox(width: 6),
+      Text(scriptName.toUpperCase(),
+          style: Theme.of(context).textTheme.titleMedium),
+      PlatformUtils.isWindows
+          ? const SizedBox()
+          : const Flexible(child: SizedBox()),
+    ]
+        .toRow(
+            separator: const SizedBox(width: 8),
+            mainAxisAlignment: MainAxisAlignment.start)
+        .padding(left: 5);
+  }
+}
+
 
 class MainTitleBar extends StatelessWidget {
   const MainTitleBar({
