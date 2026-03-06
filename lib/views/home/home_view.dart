@@ -171,16 +171,16 @@ class HomeView extends GetView<HomeController> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      if (scriptModel.state.value == ScriptState.running &&
-                          scriptModel.waitingTaskList.isNotEmpty &&
+                      if (scriptModel.waitingTaskList.isNotEmpty &&
                           scriptModel.runningTask.value.taskName.value.isEmpty &&
                           scriptModel.pendingTaskList.isEmpty) ...[
                         _getTaskTime(context, scriptModel, subtitleStyle),
                         const SizedBox(height: 4),
-                        _CountdownTimer(
-                          targetTime: scriptModel.waitingTaskList.first.nextRun.value,
-                          style: subtitleStyle,
-                        ),
+                        if (scriptModel.state.value == ScriptState.running)
+                          _CountdownTimer(
+                            targetTime: scriptModel.waitingTaskList.first.nextRun.value,
+                            style: subtitleStyle,
+                          ),
                       ],
                       if (scriptModel.pendingTaskList.isNotEmpty) ...[
                         Text(
