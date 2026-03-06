@@ -19,7 +19,7 @@ class HomeView extends GetView<HomeController> {
     if (scriptModel.waitingTaskList.isNotEmpty) {
       return '等待中 - ${scriptModel.waitingTaskList.first.taskName.value.tr}';
     }
-    return '空闲'.tr;
+    return '与服务端断联'.tr;
   }
 
   Widget _getTaskTime(BuildContext context, ScriptModel scriptModel, TextStyle? style) {
@@ -182,7 +182,10 @@ class HomeView extends GetView<HomeController> {
 
   Widget _buildCard(BuildContext context, ScriptModel scriptModel,
       {bool isDragging = false}) {
-    final subtitleStyle = Theme.of(context).textTheme.bodySmall;
+    final titleStyle =
+        Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 18);
+    final subtitleStyle =
+        Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 14);
     final isSelected = controller.selectedScripts.contains(scriptModel.name);
 
     return GestureDetector(
@@ -227,8 +230,7 @@ class HomeView extends GetView<HomeController> {
                                 child: Text(
                                   scriptModel.name,
                                   overflow: TextOverflow.ellipsis,
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
+                                  style: titleStyle,
                                 ),
                               ),
                               if (!controller.isSelectionModeActive.value)
