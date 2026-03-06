@@ -15,6 +15,7 @@ class TaskTreeView extends StatefulWidget {
 class _TaskTreeViewState extends State<TaskTreeView> {
   Map<String, List<String>> _treeData = {};
   late final OverviewController _overviewController;
+  final notTaskList = ['Home'];
 
   @override
   void initState() {
@@ -39,7 +40,13 @@ class _TaskTreeViewState extends State<TaskTreeView> {
     }
     return TreeView(
       data: _treeData,
-      onTap: (taskName) => _overviewController.selectTask(taskName),
+      onTap: (taskName) {
+        if (taskName == 'Overview') {
+          _overviewController.deselectTask();
+        } else if (!notTaskList.contains(taskName)) {
+          _overviewController.selectTask(taskName);
+        }
+      },
     );
   }
 }

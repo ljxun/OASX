@@ -75,10 +75,8 @@ class TreeNode1State extends State<TreeNode1> {
     );
   }
 
-  final notTaskList = ['Overview', 'Home', 'Script', 'Restart', 'GlobalGame'];
-
   Widget buildChild(BuildContext context, Text title, Icon icon) {
-    if (_isLeaf && !notTaskList.contains(widget.title)) {
+    if (_isLeaf) {
       return Obx(() {
         return LongPressDraggable<Map<String, dynamic>>(
           data: {
@@ -93,31 +91,26 @@ class TreeNode1State extends State<TreeNode1> {
                     WidgetStateProperty.all(const EdgeInsets.only(left: 20)),
                 alignment: Alignment.centerLeft,
               ),
-              onPressed: onPressed,
+              onPressed: _handlePress,
               child: title),
         );
       });
     }
-    return _isLeaf
-        ? TextButton(
-            style: ButtonStyle(
-              padding:
-                  MaterialStateProperty.all(const EdgeInsets.only(left: 20)),
-              alignment: Alignment.centerLeft,
-            ),
-            onPressed: onPressed,
-            child: title)
-        : TextButton.icon(
+    return TextButton.icon(
             style: const ButtonStyle(alignment: Alignment.centerLeft),
-            onPressed: onPressed,
+            onPressed: _handlePress,
             icon: icon,
             label: title);
   }
 
-  void Function()? onPressed() {
-    widget.onTap!(widget.title);
-    setState(() => _isExpanded = !_isExpanded);
-    return null;
+  void _handlePress() {
+    if (_isLeaf) {
+      widget.onTap?.call(widget.title);
+    } else {
+      setState(() {
+        _isExpanded = !_isExpanded;
+      });
+    }
   }
 
   Widget _buildFeedback(BuildContext context) {
