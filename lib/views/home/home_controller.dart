@@ -12,9 +12,41 @@ class HomeController extends GetxController {
   List<ScriptModel> get scriptModels =>
       _scriptService.scriptModelMap.values.toList();
 
-  // New method to handle reordering from the view
+  final RxList<String> selectedScripts = <String>[].obs;
+  final RxBool isSelectionModeActive = false.obs;
+
+  void enterSelectionMode() {
+    isSelectionModeActive.value = true;
+  }
+
+  void exitSelectionMode() {
+    isSelectionModeActive.value = false;
+    selectedScripts.clear();
+  }
+
+  void toggleSelection(String scriptName) {
+    if (selectedScripts.contains(scriptName)) {
+      selectedScripts.remove(scriptName);
+    } else {
+      selectedScripts.add(scriptName);
+    }
+  }
+
+  void startSelected() {
+    for (var name in selectedScripts) {
+      _scriptService.startScript(name);
+    }
+    exitSelectionMode();
+  }
+
+  void stopSelected() {
+    for (var name in selectedScripts) {
+      _scriptService.stopScript(name);
+    }
+    exitSelectionMode();
+  }
+
   void onReorder(int oldIndex, int newIndex) {
-    // If the item is moved to a later position, the new index needs to be adjusted.
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }

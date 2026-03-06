@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:oasx/model/script_model.dart';
 import 'package:oasx/translation/i18n_content.dart';
@@ -58,164 +57,237 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton(
-            heroTag: 'add_config',
-            onPressed: () => controller.addConfig(context),
-            child: const Icon(Icons.add),
-          ),
-          const SizedBox(height: 10),
-          FloatingActionButton(
-            heroTag: 'settings',
-            onPressed: () => Get.toNamed('/settings'),
-            child: const Icon(Icons.settings),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Center(
-              child: Text(
-                '阴阳师助手',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Obx(
-              () {
-                final scriptModels = controller.scriptModels;
-                return GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 100.0),
-                  itemCount: scriptModels.length,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 350,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1.7,
+    return Obx(() => Scaffold(
+          appBar: controller.isSelectionModeActive.value
+              ? _buildMultiSelectAppBar(context)
+              : null,
+          floatingActionButton: _buildFloatingActionButtons(context),
+          body: Column(
+            children: [
+              if (!controller.isSelectionModeActive.value)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(
+                    child: Text(
+                      '阴阳师助手',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
-                  itemBuilder: (context, index) {
-                    final scriptModel = scriptModels[index];
-                    
-                    return DragTarget<String>(
-                      builder: (context, candidateData, rejectedData) {
-                        return Draggable<String>(
-                          data: scriptModel.name,
-                          feedback: Material(
-                            type: MaterialType.transparency,
-                            child: SizedBox(
-                              width: 350,
-                              child: _buildCard(context, scriptModel, isDragging: true),
-                            ),
-                          ),
-                          childWhenDragging: Opacity(
-                            opacity: 0.5,
-                            child: _buildCard(context, scriptModel),
-                          ),
-                          child: _buildCard(context, scriptModel),
+                ),
+              Expanded(
+                child: Obx(
+                  () {
+                    final scriptModels = controller.scriptModels;
+                    return GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 100.0),
+                      itemCount: scriptModels.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 350,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 1.7,
+                      ),
+                      itemBuilder: (context, index) {
+                        final scriptModel = scriptModels[index];
+                        return DragTarget<String>(
+                          builder: (context, candidateData, rejectedData) {
+                            return Draggable<String>(
+                              data: scriptModel.name,
+                              feedback: Material(
+                                type: MaterialType.transparency,
+                                child: SizedBox(
+                                  width: 350,
+                                  child: _buildCard(context, scriptModel,
+                                      isDragging: true),
+                                ),
+                              ),
+                              childWhenDragging: Opacity(
+                                opacity: 0.5,
+                                child: _buildCard(context, scriptModel),
+                              ),
+                              child: _buildCard(context, scriptModel),
+                            );
+                          },
+                          onWillAccept: (data) => data != scriptModel.name,
+                          onAccept: (draggedItemName) {
+                            final oldIndex = controller.scriptModels
+                                .indexWhere((m) => m.name == draggedItemName);
+                            final newIndex = index;
+                            if (oldIndex != -1) {
+                              controller.onReorder(oldIndex, newIndex);
+                            }
+                          },
                         );
-                      },
-                      onWillAccept: (data) => data != scriptModel.name,
-                      onAccept: (draggedItemName) {
-                        final oldIndex = scriptModels.indexWhere((m) => m.name == draggedItemName);
-                        final newIndex = index;
-                        if (oldIndex != -1) {
-                          controller.onReorder(oldIndex, newIndex);
-                        }
                       },
                     );
                   },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ));
+  }
+
+  AppBar _buildMultiSelectAppBar(BuildContext context) {
+    return AppBar(
+      title: Text('已选择 ${controller.selectedScripts.length} 项'),
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: controller.exitSelectionMode,
       ),
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      actions: [
+        TextButton.icon(
+          icon: const Icon(Icons.play_circle_outline),
+          label: const Text('全部启动'),
+          onPressed: controller.startSelected,
+        ),
+        TextButton.icon(
+          icon: const Icon(Icons.stop_circle_outlined),
+          label: const Text('全部停止'),
+          onPressed: controller.stopSelected,
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
-  Widget _buildCard(BuildContext context, ScriptModel scriptModel, {bool isDragging = false}) {
+  Widget _buildFloatingActionButtons(BuildContext context) {
+    return Obx(() => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: controller.isSelectionModeActive.value
+              ? []
+              : [
+                  FloatingActionButton(
+                    heroTag: 'add_config',
+                    onPressed: () => controller.addConfig(context),
+                    child: const Icon(Icons.add),
+                  ),
+                  const SizedBox(height: 10),
+                  FloatingActionButton(
+                    heroTag: 'multi_select',
+                    onPressed: controller.enterSelectionMode,
+                    child: const Icon(Icons.check_box_outlined),
+                  ),
+                  const SizedBox(height: 10),
+                  FloatingActionButton(
+                    heroTag: 'settings',
+                    onPressed: () => Get.toNamed('/settings'),
+                    child: const Icon(Icons.settings),
+                  ),
+                ],
+        ));
+  }
+
+  Widget _buildCard(BuildContext context, ScriptModel scriptModel,
+      {bool isDragging = false}) {
     final subtitleStyle = Theme.of(context).textTheme.bodySmall;
+    final isSelected = controller.selectedScripts.contains(scriptModel.name);
 
     return GestureDetector(
-      onTap: () => Get.toNamed('/overview/${scriptModel.name}'),
+      onTap: () {
+        if (controller.isSelectionModeActive.value) {
+          controller.toggleSelection(scriptModel.name);
+        } else {
+          Get.toNamed('/overview/${scriptModel.name}');
+        }
+      },
       onSecondaryTapDown: (details) {
         if (PlatformUtils.isMobile) return;
         _showContextMenu(context, details.globalPosition, scriptModel.name);
       },
-      onLongPressStart: (details) {
-        if (!PlatformUtils.isMobile) return;
-        _showContextMenu(context, details.globalPosition, scriptModel.name);
+      onLongPress: () {
+        if (PlatformUtils.isMobile) {
+          controller.enterSelectionMode();
+          controller.toggleSelection(scriptModel.name);
+        }
       },
       child: Obx(
         () => Card(
-          elevation: isDragging ? 8.0 : 1.0,
+          elevation: isDragging || isSelected ? 8.0 : 1.0,
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+              : null,
           clipBehavior: Clip.antiAlias,
-          child: Column(
+          child: Stack(
             children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              scriptModel.name,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  scriptModel.name,
+                                  overflow: TextOverflow.ellipsis,
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
+                                ),
+                              ),
+                              if (!controller.isSelectionModeActive.value)
+                                IconButton(
+                                  icon: const Icon(
+                                      Icons.power_settings_new_rounded),
+                                  color: switch (scriptModel.state.value) {
+                                    ScriptState.running => Colors.green,
+                                    ScriptState.warning => Colors.amber,
+                                    _ => null,
+                                  },
+                                  onPressed: () =>
+                                      controller.toggleScript(scriptModel.name),
+                                ),
+                            ],
+                          ),
+                          const Spacer(flex: 1),
+                          Text(
+                            _getTaskStatusAndName(scriptModel),
+                            style: subtitleStyle,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          if (scriptModel.waitingTaskList.isNotEmpty &&
+                              scriptModel.runningTask.value.taskName.value
+                                  .isEmpty &&
+                              scriptModel.pendingTaskList.isEmpty) ...[
+                            _getTaskTime(context, scriptModel, subtitleStyle),
+                            const SizedBox(height: 4),
+                            if (scriptModel.state.value ==
+                                ScriptState.running)
+                              _CountdownTimer(
+                                targetTime: scriptModel
+                                    .waitingTaskList.first.nextRun.value,
+                                style: subtitleStyle,
+                              ),
+                          ],
+                          if (scriptModel.pendingTaskList.isNotEmpty) ...[
+                            Text(
+                              '队列中 - ${scriptModel.pendingTaskList.first.taskName.value.tr}',
+                              style: subtitleStyle,
                               overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleMedium,
                             ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.power_settings_new_rounded),
-                            color: switch (scriptModel.state.value) {
-                              ScriptState.running => Colors.green,
-                              ScriptState.warning => Colors.amber,
-                              _ => null,
-                            },
-                            onPressed: () => controller.toggleScript(scriptModel.name),
-                          ),
+                          ],
+                          const Spacer(flex: 2),
                         ],
                       ),
-                      const Spacer(flex: 1),
-                      Text(
-                        _getTaskStatusAndName(scriptModel),
-                        style: subtitleStyle,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      if (scriptModel.waitingTaskList.isNotEmpty &&
-                          scriptModel.runningTask.value.taskName.value.isEmpty &&
-                          scriptModel.pendingTaskList.isEmpty) ...[
-                        _getTaskTime(context, scriptModel, subtitleStyle),
-                        const SizedBox(height: 4),
-                        if (scriptModel.state.value == ScriptState.running)
-                          _CountdownTimer(
-                            targetTime: scriptModel.waitingTaskList.first.nextRun.value,
-                            style: subtitleStyle,
-                          ),
-                      ],
-                      if (scriptModel.pendingTaskList.isNotEmpty) ...[
-                        Text(
-                          '队列中 - ${scriptModel.pendingTaskList.first.taskName.value.tr}',
-                          style: subtitleStyle,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      const Spacer(flex: 2),
-                    ],
+                    ),
                   ),
-                ),
+                  _buildStatusLine(scriptModel),
+                ],
               ),
-              _buildStatusLine(scriptModel),
+              if (isSelected)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Icon(Icons.check_circle,
+                      color: Theme.of(context).colorScheme.primary),
+                ),
             ],
           ),
         ),
@@ -228,7 +300,8 @@ class HomeView extends GetView<HomeController> {
       return const SizedBox(height: 4);
     }
 
-    final hasActiveTask = scriptModel.runningTask.value.taskName.value.isNotEmpty;
+    final hasActiveTask =
+        scriptModel.runningTask.value.taskName.value.isNotEmpty;
 
     if (hasActiveTask) {
       return LinearProgressIndicator(
@@ -280,10 +353,9 @@ class _CountdownTimerState extends State<_CountdownTimer> {
 
   void _updateRemaining() {
     try {
-      // Use DateTime.parse() for "yyyy-MM-dd HH:mm:ss" format
       final target = DateTime.parse(widget.targetTime.trim());
       final now = DateTime.now();
-      
+
       setState(() {
         _remaining = target.difference(now);
       });
@@ -301,8 +373,7 @@ class _CountdownTimerState extends State<_CountdownTimer> {
   String _formatDuration(Duration duration) {
     if (duration.isNegative) return '已超时';
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-    
-    // Handle durations longer than a day
+
     final days = duration.inDays;
     final hours = twoDigits(duration.inHours.remainder(24));
     final minutes = twoDigits(duration.inMinutes.remainder(60));
