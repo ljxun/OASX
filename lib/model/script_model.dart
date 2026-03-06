@@ -32,7 +32,11 @@ class ScriptModel {
       TaskItemModel? runningTask,
       List<TaskItemModel>? pendingTaskList,
       List<TaskItemModel>? waitingTaskList}) {
-    if (state != null && this.state.value != state) this.state.value = state;
+    
+    if (state != null && this.state.value != state) {
+      this.state.value = state;
+    }
+
     if (runningTask != null && this.runningTask.value != runningTask) {
       this.runningTask.value = runningTask;
     }
