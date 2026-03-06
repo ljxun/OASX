@@ -104,11 +104,7 @@ class Overview extends StatelessWidget {
             child: Column(
               children: [
                 AppBar(
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => overviewController.deselectTask(),
-                  ),
-                  title: Obx(() => Text((overviewController.selectedTaskName.value ?? '').tr)),
+                  automaticallyImplyLeading: false,
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                 ),

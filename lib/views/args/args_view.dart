@@ -77,7 +77,7 @@ class Args extends StatelessWidget {
                                   children: _children(name),
                                 ))
                             .toList())
-                    .constrained(maxWidth: 880, minWidth: 100))
+                    .constrained(maxWidth: 840, minWidth: 100))
             .alignment(Alignment.topCenter),
       );
     });

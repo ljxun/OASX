@@ -11,6 +11,7 @@ class TreeNode1 extends StatefulWidget {
   final void Function(String title)? onTap;
   final List<String> children;
   final int level;
+  final String? selectedTask;
 
   const TreeNode1({
     super.key,
@@ -18,6 +19,7 @@ class TreeNode1 extends StatefulWidget {
     required this.onTap,
     required this.children,
     this.level = 0,
+    this.selectedTask,
   });
 
   @override
@@ -41,6 +43,7 @@ class TreeNode1State extends State<TreeNode1> {
 
   Widget _buildNodeTile() {
     final indent = 20.0 * widget.level;
+    final isSelected = widget.title == widget.selectedTask;
     final tile = ListTile(
       contentPadding: EdgeInsets.only(left: indent + 16.0, right: 8.0),
       leading: _isLeaf ? null : _buildExpansionIcon(),
@@ -48,6 +51,8 @@ class TreeNode1State extends State<TreeNode1> {
       onTap: _handlePress,
       dense: true,
       visualDensity: VisualDensity.compact,
+      selected: isSelected,
+      selectedTileColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
     );
 
     if (_isLeaf) {
@@ -95,6 +100,7 @@ class TreeNode1State extends State<TreeNode1> {
                 onTap: widget.onTap,
                 children: const [],
                 level: widget.level + 1,
+                selectedTask: widget.selectedTask,
               ))
           .toList(),
     );

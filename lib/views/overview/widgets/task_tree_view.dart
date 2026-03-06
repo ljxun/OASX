@@ -38,15 +38,16 @@ class _TaskTreeViewState extends State<TaskTreeView> {
     if (_treeData.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    return TreeView(
-      data: _treeData,
-      onTap: (taskName) {
-        if (taskName == 'Overview') {
-          _overviewController.deselectTask();
-        } else if (!notTaskList.contains(taskName)) {
-          _overviewController.selectTask(taskName);
-        }
-      },
-    );
+    return Obx(() => TreeView(
+          data: _treeData,
+          selectedTask: _overviewController.selectedTaskName.value,
+          onTap: (taskName) {
+            if (taskName == 'Overview') {
+              _overviewController.deselectTask();
+            } else if (!notTaskList.contains(taskName)) {
+              _overviewController.selectTask(taskName);
+            }
+          },
+        ));
   }
 }
