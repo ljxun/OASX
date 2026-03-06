@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "oasx" "\0"
+            VALUE "FileDescription", "YYS_UI" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "oasx" "\0"
+            VALUE "InternalName", "YYS_UI" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2023 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "oasx.exe" "\0"
-            VALUE "ProductName", "oasx" "\0"
+            VALUE "OriginalFilename", "YYS_UI.exe" "\0"
+            VALUE "ProductName", "YYS_UI" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
