@@ -30,7 +30,7 @@ class MainTitleBar extends StatelessWidget {
         Image.asset("assets/images/Icon-app.png", height: 30, width: 30),
         const SizedBox(width: 6),
         Text(
-            "OASX / ${controller.selectedScript.value.toUpperCase()} /  ${controller.selectedMenu.value.tr}",
+            "${controller.selectedScript.value.toUpperCase()} /  ${controller.selectedMenu.value.tr}",
             style: Theme.of(context).textTheme.titleMedium),
         PlatformUtils.isWindows
             ? const SizedBox()
@@ -55,7 +55,7 @@ class LoginTitle extends StatelessWidget {
     return <Widget>[
       Image.asset("assets/images/Icon-app.png", height: 30, width: 30),
       const SizedBox(width: 6),
-      Text("OASX / ${I18n.login.tr}",
+      Text(I18n.login.tr,
           style: Theme.of(context).textTheme.titleMedium),
       PlatformUtils.isWindows
           ? const SizedBox()
@@ -84,7 +84,7 @@ class SettingTitle extends StatelessWidget {
       if (backButton) BackButton(onPressed: () => Get.offAllNamed('/main')),
       Image.asset("assets/images/Icon-app.png", height: 30, width: 30),
       const SizedBox(width: 6),
-      Text("OASX / ${I18n.setting.tr}",
+      Text(I18n.setting.tr,
           style: Theme.of(context).textTheme.titleMedium),
       PlatformUtils.isWindows
           ? const SizedBox()
@@ -118,7 +118,7 @@ class ServerTitle extends StatelessWidget {
       }),
       Image.asset("assets/images/Icon-app.png", height: 30, width: 30),
       const SizedBox(width: 6),
-      Text("OASX / Server", style: Theme.of(context).textTheme.titleMedium),
+      Text("Server", style: Theme.of(context).textTheme.titleMedium),
       PlatformUtils.isWindows
           ? const SizedBox()
           : const Flexible(child: SizedBox()),
