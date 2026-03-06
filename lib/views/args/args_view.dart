@@ -39,7 +39,7 @@ class Args extends StatelessWidget {
       final selectedScript = navController.selectedScript.value;
       final selectedTask = navController.selectedMenu.value;
       return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
               child: ExpansionTileGroup(
                       spaceBetweenItem: 10,
                       children: controller.groupsName.value

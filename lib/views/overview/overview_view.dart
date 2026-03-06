@@ -108,7 +108,7 @@ class Overview extends StatelessWidget {
                     icon: const Icon(Icons.arrow_back),
                     onPressed: () => overviewController.deselectTask(),
                   ),
-                  title: Obx(() => Text(overviewController.selectedTaskName.value ?? '')),
+                  title: Obx(() => Text((overviewController.selectedTaskName.value ?? '').tr)),
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                 ),
