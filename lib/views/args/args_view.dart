@@ -38,45 +38,48 @@ class Args extends StatelessWidget {
       final navController = Get.find<NavCtrl>();
       final selectedScript = navController.selectedScript.value;
       final selectedTask = navController.selectedMenu.value;
-      return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
-              child: ExpansionTileGroup(
-                      spaceBetweenItem: 10,
-                      children: controller.groupsName.value
-                          .map((name) => ExpansionTileItem(
-                                initiallyExpanded: true,
-                                isHasTopBorder: false,
-                                isHasBottomBorder: false,
-                                backgroundColor: Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer
-                                    .withValues(alpha: 0.24),
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(10)),
-                                title: <Widget>[
-                                  if (groupDraggable)
-                                    Draggable<Map<String, dynamic>>(
-                                      data: {
-                                        'model': TaskItemModel(
-                                            scriptName ?? selectedScript,
-                                            taskName ?? selectedTask,
-                                            '',
-                                            groupName: name),
-                                        'source': 'argsViewGroup'
-                                      },
-                                      feedback: _buildFeedback(context, name),
-                                      child: const Icon(
-                                          Icons.drag_indicator_outlined),
-                                    ),
-                                  Text(name.tr)
-                                ].toRow(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min),
-                                children: _children(name),
-                              ))
-                          .toList())
-                  .constrained(maxWidth: 700, minWidth: 100))
-          .alignment(Alignment.topCenter);
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
+                child: ExpansionTileGroup(
+                        spaceBetweenItem: 10,
+                        children: controller.groupsName.value
+                            .map((name) => ExpansionTileItem(
+                                  initiallyExpanded: true,
+                                  isHasTopBorder: false,
+                                  isHasBottomBorder: false,
+                                  backgroundColor: Theme.of(context)
+                                      .colorScheme
+                                      .secondaryContainer
+                                      .withValues(alpha: 0.24),
+                                  borderRadius:
+                                      const BorderRadius.all(Radius.circular(10)),
+                                  title: <Widget>[
+                                    if (groupDraggable)
+                                      Draggable<Map<String, dynamic>>(
+                                        data: {
+                                          'model': TaskItemModel(
+                                              scriptName ?? selectedScript,
+                                              taskName ?? selectedTask,
+                                              '',
+                                              groupName: name),
+                                          'source': 'argsViewGroup'
+                                        },
+                                        feedback: _buildFeedback(context, name),
+                                        child: const Icon(
+                                            Icons.drag_indicator_outlined),
+                                      ),
+                                    Text(name.tr)
+                                  ].toRow(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min),
+                                  children: _children(name),
+                                ))
+                            .toList())
+                    .constrained(maxWidth: 880, minWidth: 100))
+            .alignment(Alignment.topCenter),
+      );
     });
   }
 
