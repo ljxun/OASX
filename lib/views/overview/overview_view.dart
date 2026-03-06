@@ -100,17 +100,8 @@ class Overview extends StatelessWidget {
             child: TaskTreeView(name: name),
           ),
           // Right Column (Args View)
-          Expanded(
-            child: Column(
-              children: [
-                AppBar(
-                  automaticallyImplyLeading: false,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                ),
-                const Expanded(child: Args()),
-              ],
-            ),
+          const Expanded(
+            child: Args(),
           ),
         ],
       );

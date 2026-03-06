@@ -159,12 +159,33 @@ class HomeView extends GetView<HomeController> {
           child: Column(
             children: [
               Expanded(
-                child: ListTile(
-                  title: Text(scriptModel.name, overflow: TextOverflow.ellipsis),
-                  subtitle: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              scriptModel.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.power_settings_new_rounded),
+                            color: switch (scriptModel.state.value) {
+                              ScriptState.running => Colors.green,
+                              ScriptState.warning => Colors.amber,
+                              _ => null,
+                            },
+                            onPressed: () => controller.toggleScript(scriptModel.name),
+                          ),
+                        ],
+                      ),
+                      const Spacer(flex: 1),
                       Text(
                         _getTaskStatusAndName(scriptModel),
                         style: subtitleStyle,
@@ -188,17 +209,9 @@ class HomeView extends GetView<HomeController> {
                           style: subtitleStyle,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ]
+                      ],
+                      const Spacer(flex: 2),
                     ],
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.power_settings_new_rounded),
-                    color: switch (scriptModel.state.value) {
-                      ScriptState.running => Colors.green,
-                      ScriptState.warning => Colors.amber,
-                      _ => null,
-                    },
-                    onPressed: () => controller.toggleScript(scriptModel.name),
                   ),
                 ),
               ),
