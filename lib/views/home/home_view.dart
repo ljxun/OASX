@@ -140,7 +140,8 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _buildCard(BuildContext context, ScriptModel scriptModel, {bool isDragging = false}) {
-    final subtitleStyle = Theme.of(context).textTheme.bodySmall;
+    final titleStyle = Theme.of(context).textTheme.titleLarge;
+    final subtitleStyle = Theme.of(context).textTheme.bodyMedium;
 
     return GestureDetector(
       onTap: () => Get.toNamed('/overview/${scriptModel.name}'),
@@ -160,27 +161,23 @@ class HomeView extends GetView<HomeController> {
             children: [
               Expanded(
                 child: ListTile(
-                  title: Text(scriptModel.name, overflow: TextOverflow.ellipsis),
+                  title: Text(
+                    scriptModel.name,
+                    style: titleStyle, // Apply larger font style to the title
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      const SizedBox(height: 8),
                       Text(
                         _getTaskStatusAndName(scriptModel),
                         style: subtitleStyle,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-                      if (scriptModel.waitingTaskList.isNotEmpty &&
-                          scriptModel.runningTask.value.taskName.value.isEmpty &&
-                          scriptModel.pendingTaskList.isEmpty) ...[
-                        _getTaskTime(context, scriptModel, subtitleStyle),
-                        const SizedBox(height: 4),
-                        _CountdownTimer(
-                          targetTime: scriptModel.waitingTaskList.first.nextRun.value,
-                          style: subtitleStyle,
-                        ),
-                      ]
+                      _getTaskTime(context, scriptModel, subtitleStyle),
                     ],
                   ),
                   trailing: IconButton(
@@ -224,82 +221,5 @@ class HomeView extends GetView<HomeController> {
         minHeight: 4,
       );
     }
-  }
-}
-
-class _CountdownTimer extends StatefulWidget {
-  final String targetTime;
-  final TextStyle? style;
-  const _CountdownTimer({required this.targetTime, this.style});
-
-  @override
-  State<_CountdownTimer> createState() => _CountdownTimerState();
-}
-
-class _CountdownTimerState extends State<_CountdownTimer> {
-  Timer? _timer;
-  Duration _remaining = Duration.zero;
-
-  @override
-  void initState() {
-    super.initState();
-    _updateRemaining();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateRemaining();
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant _CountdownTimer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.targetTime != oldWidget.targetTime) {
-      _updateRemaining();
-    }
-  }
-
-  void _updateRemaining() {
-    try {
-      // Use DateTime.parse() for "yyyy-MM-dd HH:mm:ss" format
-      final target = DateTime.parse(widget.targetTime.trim());
-      final now = DateTime.now();
-      
-      setState(() {
-        _remaining = target.difference(now);
-      });
-    } catch (e) {
-      setState(() => _remaining = Duration.zero);
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  String _formatDuration(Duration duration) {
-    if (duration.isNegative) return '已超时';
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    
-    // Handle durations longer than a day
-    final days = duration.inDays;
-    final hours = twoDigits(duration.inHours.remainder(24));
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-
-    if (days > 0) {
-      return '$days天 $hours:$minutes:$seconds 后执行';
-    } else {
-      return '$hours:$minutes:$seconds 后执行';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      _formatDuration(_remaining),
-      style: widget.style,
-      overflow: TextOverflow.ellipsis,
-    );
   }
 }
