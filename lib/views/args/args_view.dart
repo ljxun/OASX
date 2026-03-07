@@ -1,22 +1,21 @@
 library args;
 
-// import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_pickers/pickers.dart';
-import 'package:flutter_pickers/style/default_style.dart';
 import 'package:get/get.dart';
+import 'package:oasx/api/api_client.dart';
+import 'package:oasx/service/script_service.dart';
 import 'package:oasx/service/theme_service.dart';
-import 'package:oasx/service/websocket_service.dart';
+import 'package:oasx/views/dialog/multi_select_dialog.dart';
 import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/views/overview/overview_view.dart';
 import 'package:styled_widget/styled_widget.dart';
-import 'dart:convert';
-import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'dart:async';
-
-import 'package:oasx/api/api_client.dart';
+import 'package:expansion_tile_group/expansion_tile_group.dart';
+import 'dart:convert';
+import 'package:flutter_pickers/pickers.dart';
+import 'package:flutter_pickers/style/default_style.dart';
+import 'package:oasx/service/websocket_service.dart';
 
 import '../../translation/i18n_content.dart';
 
@@ -41,46 +40,74 @@ class Args extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: ExpansionTileGroup(
-                        spaceBetweenItem: 10,
-                        children: controller.groupsName.value
-                            .map((name) => ExpansionTileItem(
-                                  initiallyExpanded: true,
-                                  isHasTopBorder: false,
-                                  isHasBottomBorder: false,
-                                  backgroundColor: Theme.of(context)
-                                      .colorScheme
-                                      .secondaryContainer
-                                      .withValues(alpha: 0.24),
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(10)),
-                                  title: <Widget>[
-                                    if (groupDraggable)
-                                      Draggable<Map<String, dynamic>>(
-                                        data: {
-                                          'model': TaskItemModel(
-                                              scriptName ?? selectedScript,
-                                              taskName ?? selectedTask,
-                                              '',
-                                              groupName: name),
-                                          'source': 'argsViewGroup'
-                                        },
-                                        feedback: _buildFeedback(context, name),
-                                        child: const Icon(
-                                            Icons.drag_indicator_outlined),
-                                      ),
-                                    Text(name.tr)
-                                  ].toRow(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min),
-                                  children: _children(name),
-                                ))
-                            .toList())
-                    .constrained(maxWidth: 840, minWidth: 100))
-            .alignment(Alignment.topCenter),
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          child: ExpansionTileGroup(
+            spaceBetweenItem: 10,
+            children: controller.groupsName.value
+                .map((name) => ExpansionTileItem(
+                      initiallyExpanded: true,
+                      isHasTopBorder: false,
+                      isHasBottomBorder: false,
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .secondaryContainer
+                          .withValues(alpha: 0.24),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(10)),
+                      title: Row(
+                        children: [
+                          if (groupDraggable)
+                            Draggable<Map<String, dynamic>>(
+                              data: {
+                                'model': TaskItemModel(
+                                    scriptName ?? selectedScript,
+                                    taskName ?? selectedTask,
+                                    '',
+                                    groupName: name),
+                                'source': 'argsViewGroup'
+                              },
+                              feedback: _buildFeedback(context, name),
+                              child: const Icon(Icons.drag_indicator_outlined),
+                            ),
+                          Expanded(child: Text(name.tr)),
+                          IconButton(
+                            icon: const Icon(Icons.copy_outlined, size: 20),
+                            onPressed: () => _handleCopyGroup(
+                                context,
+                                taskName ?? selectedTask,
+                                name,
+                                scriptName ?? selectedScript),
+                          ),
+                        ],
+                      ),
+                      children: _children(name),
+                    ))
+                .toList(),
+          ).constrained(maxWidth: 840, minWidth: 100),
+        ).alignment(Alignment.topCenter),
       );
     });
+  }
+
+  Future<void> _handleCopyGroup(BuildContext context, String taskName,
+      String groupName, String currentScript) async {
+    final scriptService = Get.find<ScriptService>();
+    final allScripts = scriptService.scriptModelMap.keys.toList();
+
+    final List<String>? selectedScripts = await Get.dialog(
+      MultiSelectDialog(
+        allScripts: allScripts,
+        currentScript: currentScript,
+      ),
+    );
+
+    if (selectedScripts != null && selectedScripts.isNotEmpty) {
+      for (final destScript in selectedScripts) {
+        await ApiClient()
+            .copyGroup(taskName, groupName, destScript, currentScript);
+      }
+      Get.snackbar('成功', '模块已复制到 ${selectedScripts.join(', ')}');
+    }
   }
 
   List<Widget> _children(String groupName) {
@@ -92,7 +119,7 @@ class Args extends StatelessWidget {
         scriptName: scriptName,
         taskName: taskName,
         setArgument: controller.setArgument,
-        getGroupName: groupsModel.getGroupName,
+        getGroupName: () => groupName,
         index: i,
       ));
     }
@@ -176,25 +203,6 @@ class _ArgumentViewState extends State<ArgumentView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [_title(), _form()]).padding(bottom: 8);
     }
-    // return LayoutBuilder(builder: (context, constraints) {
-    //   if (constraints.maxWidth >= 350) {
-    //     return Row(
-    //       crossAxisAlignment: CrossAxisAlignment.start,
-    //       children: [
-    //         Expanded(
-    //           child: _title(),
-    //         ),
-
-    //         // const Spacer(),
-    //         _form(),
-    //       ],
-    //     );
-    //   } else {
-    //     return Column(
-    //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         children: [_title(), _form()]);
-    //   }
-    // });
   }
 
   Widget _title() {
@@ -274,7 +282,7 @@ class _ArgumentViewState extends State<ArgumentView> {
           onChange: onDateTimeChanged,
         ).constrained(width: landscape ? 200 : null),
       "time_delta" => TimeDeltaPicker(
-          value: ensureTimeDeltaString(model.value),
+          value: model.value.toString(),
           onChange: onTimeDeltaChanged,
         ).constrained(width: landscape ? 200 : null),
       "time" => TimePicker(
@@ -349,7 +357,6 @@ class _ArgumentViewState extends State<ArgumentView> {
     showSnakbar(value);
   }
 
-// -----------------------------------------------------------------------------
   void showSnakbar(dynamic value) {
     Get.snackbar(I18n.setting_saved.tr, "$value",
         duration: const Duration(seconds: 1));

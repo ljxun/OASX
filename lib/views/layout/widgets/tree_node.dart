@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:oasx/api/api_client.dart';
+import 'package:oasx/service/script_service.dart';
 import 'package:oasx/service/theme_service.dart';
+import 'package:oasx/views/dialog/multi_select_dialog.dart';
 import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/views/overview/overview_view.dart';
 import 'package:styled_widget/styled_widget.dart';
@@ -57,22 +59,58 @@ class TreeNode1State extends State<TreeNode1> {
     );
 
     if (_isLeaf) {
-      return Obx(() {
-        return LongPressDraggable<Map<String, dynamic>>(
-          data: {
-            'model': TaskItemModel(
-              Get.find<NavCtrl>().selectedScript.value,
-              widget.title,
-              '',
-            ),
-            'source': 'treeNode'
-          },
-          feedback: _buildFeedback(context),
-          child: tile,
-        );
-      });
+      return GestureDetector(
+        onSecondaryTapUp: (details) => _showContextMenu(context, details.globalPosition),
+        child: Obx(() {
+          return LongPressDraggable<Map<String, dynamic>>(
+            data: {
+              'model': TaskItemModel(
+                Get.find<NavCtrl>().selectedScript.value,
+                widget.title,
+                '',
+              ),
+              'source': 'treeNode'
+            },
+            feedback: _buildFeedback(context),
+            child: tile,
+          );
+        }),
+      );
     }
     return tile;
+  }
+
+  void _showContextMenu(BuildContext context, Offset position) {
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
+      items: [
+        PopupMenuItem(
+          child: const Text('复制到...'),
+          onTap: _handleCopy,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleCopy() async {
+    final scriptService = Get.find<ScriptService>();
+    final currentScript = Get.find<NavCtrl>().selectedScript.value;
+    final allScripts = scriptService.scriptModelMap.keys.toList();
+
+    final List<String>? selectedScripts = await Get.dialog(
+      MultiSelectDialog(
+        allScripts: allScripts,
+        currentScript: currentScript,
+      ),
+    );
+
+    if (selectedScripts != null && selectedScripts.isNotEmpty) {
+      for (final destScript in selectedScripts) {
+        await ApiClient().copyTask(widget.title, destScript, currentScript);
+      }
+      Get.snackbar('成功', '任务已复制到 ${selectedScripts.join(', ')}');
+    }
   }
 
   Widget _buildExpansionIcon() {
