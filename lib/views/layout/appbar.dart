@@ -7,7 +7,9 @@ import 'package:oasx/views/layout/title.dart';
 import 'package:oasx/utils/platform_utils.dart';
 
 /// 统一入口：根据平台返回合适的 AppBar
-PreferredSizeWidget buildPlatformAppBar(BuildContext context, {
+PreferredSizeWidget buildPlatformAppBar(
+  BuildContext context, {
+  Widget? title,
   bool isCollapsed = false,
   VoidCallback? onMenuPressed,
   List<Widget>? actions,
@@ -15,21 +17,23 @@ PreferredSizeWidget buildPlatformAppBar(BuildContext context, {
   final platform = PlatformUtils.platfrom();
   return switch (platform) {
     PlatformType.windows => _windowAppbar(
-      context,
-      onMenuPressed: isCollapsed ? onMenuPressed : null,
-      actions: actions,
-    ),
-    PlatformType.linux => _desktopAppbar(actions: actions),
-    PlatformType.macOS => _desktopAppbar(actions: actions),
-    PlatformType.android => _mobileTabletAppbar(actions: actions),
-    PlatformType.iOS => _mobileTabletAppbar(actions: actions),
-    PlatformType.web => _webAppbar(),
-    _ => _webAppbar(),
+        context,
+        title: title,
+        onMenuPressed: isCollapsed ? onMenuPressed : null,
+        actions: actions,
+      ),
+    PlatformType.linux => _desktopAppbar(title: title, actions: actions),
+    PlatformType.macOS => _desktopAppbar(title: title, actions: actions),
+    PlatformType.android => _mobileTabletAppbar(title: title, actions: actions),
+    PlatformType.iOS => _mobileTabletAppbar(title: title, actions: actions),
+    PlatformType.web => _webAppbar(title: title),
+    _ => _webAppbar(title: title),
   };
 }
 
 /// Windows 特殊标题栏
-PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPressed, List<Widget>? actions}) {
+PreferredSizeWidget _windowAppbar(BuildContext context,
+    {Widget? title, VoidCallback? onMenuPressed, List<Widget>? actions}) {
   return PreferredSize(
     preferredSize: const Size.fromHeight(50),
     child: WindowCaption(
@@ -42,7 +46,7 @@ PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPre
               icon: const Icon(Icons.menu),
               onPressed: onMenuPressed,
             ),
-          getTitle(),
+          title ?? getTitle(),
           const Spacer(),
           if (actions != null) ...actions,
         ],
@@ -52,25 +56,25 @@ PreferredSizeWidget _windowAppbar(BuildContext context, {VoidCallback? onMenuPre
 }
 
 /// 桌面 (Linux / macOS)
-PreferredSizeWidget _desktopAppbar({List<Widget>? actions}) {
+PreferredSizeWidget _desktopAppbar({Widget? title, List<Widget>? actions}) {
   return AppBar(
-    title: getTitle(),
+    title: title ?? getTitle(),
     actions: actions,
   );
 }
 
 /// Web
-PreferredSizeWidget _webAppbar() {
+PreferredSizeWidget _webAppbar({Widget? title}) {
   return PreferredSize(
     preferredSize: const Size.fromHeight(90),
-    child: getTitle().padding(left: 16, top: 10, bottom: 10),
+    child: (title ?? getTitle()).padding(left: 16, top: 10, bottom: 10),
   );
 }
 
 /// 移动端 (Android / iOS)
-PreferredSizeWidget _mobileTabletAppbar({List<Widget>? actions}) {
+PreferredSizeWidget _mobileTabletAppbar({Widget? title, List<Widget>? actions}) {
   return AppBar(
-    title: getTitle(),
+    title: title ?? getTitle(),
     actions: actions,
   );
 }

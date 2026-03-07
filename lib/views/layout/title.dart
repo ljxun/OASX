@@ -11,7 +11,7 @@ Widget getTitle() {
   var routePath = Get.currentRoute;
 
   // Handle dynamic overview pages
-  if (routePath.startsWith('/overview/')) {
+  if (routePath == '/overview') {
     return const OverviewTitle();
   }
 
