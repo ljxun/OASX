@@ -38,98 +38,86 @@ class Overview extends StatelessWidget {
   Widget build(BuildContext context) {
     final overviewController = Get.find<OverviewController>(tag: name);
 
-    Widget buildDefaultLayout() {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Left Column
-          SizedBox(
-            width: 200,
-            child: DragTarget<Map<String, dynamic>>(
-              builder: (context, candidateData, rejectedData) {
-                bool isHovering = candidateData.isNotEmpty;
-                return Card(
-                  margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
-                  clipBehavior: Clip.antiAlias,
-                  color: isHovering
-                      ? Colors.red.withOpacity(0.2)
-                      : Theme.of(context).cardColor,
-                  child: TaskTreeView(name: name),
-                );
-              },
-              onWillAccept: (data) {
-                return data != null &&
-                    (data['source'] == 'pending' || data['source'] == 'waiting');
-              },
-              onAccept: (data) {
-                final task = data['model'] as TaskItemModel;
-                overviewController.disableScriptTask(task);
-              },
-            ),
-          ),
-          // Center Column
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-              child: Column(
-                children: [
-                  _SchedulerWidget(controller: overviewController),
-                  _RunningWidget(controller: overviewController),
-                  _PendingWidget(controller: overviewController),
-                  Expanded(
-                    child: _WaitingWidget(controller: overviewController),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Right Column
-          Expanded(
-            flex: 5,
-            child: LogWidget(
-              key: ValueKey(overviewController.hashCode),
-              controller: overviewController,
-              title: I18n.log.tr,
-              enableCollapse: false,
-            ).marginOnly(right: 10, bottom: 10),
-          ),
-        ],
-      );
-    }
-
-    Widget buildTaskSelectedLayout() {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Left Column
-          SizedBox(
-            width: 200,
-            child: Card(
-              margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
-              clipBehavior: Clip.antiAlias,
-              child: TaskTreeView(name: name),
-            ),
-          ),
-          // Right Column (Args View)
-          const Expanded(
-            child: Args(),
-          ),
-        ],
-      );
-    }
-
     return Scaffold(
       appBar: buildPlatformAppBar(context),
       body: Obx(() {
-        final isTaskSelected = overviewController.selectedTaskName.value != null;
-        if (context.mediaQuery.orientation == Orientation.landscape && isTaskSelected) {
-          return buildTaskSelectedLayout();
+        if (context.mediaQuery.orientation == Orientation.portrait) {
+          return buildPortraitLayout();
         }
-        return context.mediaQuery.orientation == Orientation.portrait
-            ? buildPortraitLayout()
-            : buildDefaultLayout();
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left Column (Task Tree - always visible)
+            SizedBox(
+              width: 200,
+              child: DragTarget<Map<String, dynamic>>(
+                builder: (context, candidateData, rejectedData) {
+                  bool isHovering = candidateData.isNotEmpty;
+                  return Card(
+                    margin: const EdgeInsets.fromLTRB(10, 0, 0, 10),
+                    clipBehavior: Clip.antiAlias,
+                    color: isHovering
+                        ? Colors.red.withOpacity(0.2)
+                        : Theme.of(context).cardColor,
+                    child: TaskTreeView(name: name),
+                  );
+                },
+                onWillAccept: (data) {
+                  return data != null &&
+                      (data['source'] == 'pending' ||
+                          data['source'] == 'waiting');
+                },
+                onAccept: (data) {
+                  final task = data['model'] as TaskItemModel;
+                  overviewController.disableScriptTask(task);
+                },
+              ),
+            ),
+            // Right Content Area (Switches between default and args)
+            Expanded(
+              child: overviewController.selectedTaskName.value == null
+                  ? _buildDefaultContent(overviewController)
+                  : const Args(),
+            ),
+          ],
+        );
       }),
+    );
+  }
+
+  Widget _buildDefaultContent(OverviewController controller) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Center Column
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+            child: Column(
+              children: [
+                _SchedulerWidget(controller: controller),
+                _RunningWidget(controller: controller),
+                _PendingWidget(controller: controller),
+                Expanded(
+                  child: _WaitingWidget(controller: controller),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Right Column
+        Expanded(
+          flex: 5,
+          child: LogWidget(
+            key: ValueKey(controller.hashCode),
+            controller: controller,
+            title: I18n.log.tr,
+            enableCollapse: false,
+          ).marginOnly(right: 10, bottom: 10),
+        ),
+      ],
     );
   }
 
@@ -141,7 +129,8 @@ class Overview extends StatelessWidget {
         TaskTreeView(name: name),
         _RunningWidget(controller: overviewController),
         _PendingWidget(controller: overviewController),
-        _WaitingWidget(controller: overviewController).constrained(maxHeight: 200),
+        _WaitingWidget(controller: overviewController)
+            .constrained(maxHeight: 200),
         const Args(),
         LogWidget(
                 key: ValueKey(overviewController.hashCode),
