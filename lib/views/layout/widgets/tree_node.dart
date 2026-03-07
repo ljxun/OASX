@@ -4,7 +4,6 @@ import 'package:oasx/api/api_client.dart';
 import 'package:oasx/service/script_service.dart';
 import 'package:oasx/service/theme_service.dart';
 import 'package:oasx/views/dialog/multi_select_dialog.dart';
-import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/views/overview/overview_view.dart';
 import 'package:styled_widget/styled_widget.dart';
 
@@ -14,6 +13,7 @@ class TreeNode1 extends StatefulWidget {
   final List<String> children;
   final int level;
   final String? selectedTask;
+  final String name;
 
   const TreeNode1({
     super.key,
@@ -22,6 +22,7 @@ class TreeNode1 extends StatefulWidget {
     required this.children,
     this.level = 0,
     this.selectedTask,
+    required this.name,
   });
 
   @override
@@ -61,20 +62,18 @@ class TreeNode1State extends State<TreeNode1> {
     if (_isLeaf) {
       return GestureDetector(
         onSecondaryTapUp: (details) => _showContextMenu(context, details.globalPosition),
-        child: Obx(() {
-          return LongPressDraggable<Map<String, dynamic>>(
-            data: {
-              'model': TaskItemModel(
-                Get.find<NavCtrl>().selectedScript.value,
-                widget.title,
-                '',
-              ),
-              'source': 'treeNode'
-            },
-            feedback: _buildFeedback(context),
-            child: tile,
-          );
-        }),
+        child: LongPressDraggable<Map<String, dynamic>>(
+          data: {
+            'model': TaskItemModel(
+              widget.name,
+              widget.title,
+              '',
+            ),
+            'source': 'treeNode'
+          },
+          feedback: _buildFeedback(context),
+          child: tile,
+        ),
       );
     }
     return tile;
@@ -95,7 +94,7 @@ class TreeNode1State extends State<TreeNode1> {
 
   Future<void> _handleCopy() async {
     final scriptService = Get.find<ScriptService>();
-    final currentScript = Get.find<NavCtrl>().selectedScript.value;
+    final currentScript = widget.name;
     final allScripts = scriptService.scriptModelMap.keys.toList();
 
     final List<String>? selectedScripts = await Get.dialog(
@@ -135,6 +134,7 @@ class TreeNode1State extends State<TreeNode1> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: widget.children
           .map((e) => TreeNode1(
+                name: widget.name,
                 title: e,
                 onTap: widget.onTap,
                 children: const [],

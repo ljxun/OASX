@@ -7,7 +7,6 @@ import 'package:oasx/api/api_client.dart';
 import 'package:oasx/service/script_service.dart';
 import 'package:oasx/service/theme_service.dart';
 import 'package:oasx/views/dialog/multi_select_dialog.dart';
-import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/views/overview/overview_view.dart';
 import 'package:styled_widget/styled_widget.dart';
 import 'dart:async';
@@ -25,18 +24,22 @@ part '../../controller/args/args_controller.dart';
 
 class Args extends StatelessWidget {
   const Args(
-      {Key? key, this.scriptName, this.taskName, this.groupDraggable = true})
+      {Key? key,
+      this.scriptName,
+      this.taskName,
+      this.groupDraggable = true,
+      required this.overviewController})
       : super(key: key);
   final String? scriptName;
   final String? taskName;
   final bool groupDraggable;
+  final OverviewController overviewController;
 
   @override
   Widget build(BuildContext context) {
     return GetX<ArgsController>(builder: (controller) {
-      final navController = Get.find<NavCtrl>();
-      final selectedScript = navController.selectedScript.value;
-      final selectedTask = navController.selectedMenu.value;
+      final selectedScript = overviewController.name;
+      final selectedTask = overviewController.selectedTaskName.value;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: SingleChildScrollView(
@@ -61,7 +64,7 @@ class Args extends StatelessWidget {
                               data: {
                                 'model': TaskItemModel(
                                     scriptName ?? selectedScript,
-                                    taskName ?? selectedTask,
+                                    taskName ?? selectedTask!,
                                     '',
                                     groupName: name),
                                 'source': 'argsViewGroup'
@@ -74,7 +77,7 @@ class Args extends StatelessWidget {
                             icon: const Icon(Icons.copy_outlined, size: 20),
                             onPressed: () => _handleCopyGroup(
                                 context,
-                                taskName ?? selectedTask,
+                                taskName ?? selectedTask!,
                                 name,
                                 scriptName ?? selectedScript),
                           ),

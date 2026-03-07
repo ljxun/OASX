@@ -78,7 +78,7 @@ class Overview extends StatelessWidget {
             Expanded(
               child: overviewController.selectedTaskName.value == null
                   ? _buildDefaultContent(overviewController)
-                  : const Args(),
+                  : Args(overviewController: overviewController),
             ),
           ],
         );
@@ -131,7 +131,7 @@ class Overview extends StatelessWidget {
         _PendingWidget(controller: overviewController),
         _WaitingWidget(controller: overviewController)
             .constrained(maxHeight: 200),
-        const Args(),
+        Args(overviewController: overviewController),
         LogWidget(
                 key: ValueKey(overviewController.hashCode),
                 controller: overviewController,

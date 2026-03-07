@@ -39,6 +39,7 @@ class _TaskTreeViewState extends State<TaskTreeView> {
       return const Center(child: CircularProgressIndicator());
     }
     return Obx(() => TreeView(
+          name: widget.name,
           data: _treeData,
           selectedTask: _overviewController.selectedTaskName.value,
           onTap: (taskName) {

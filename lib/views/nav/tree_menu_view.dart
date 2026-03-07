@@ -18,6 +18,7 @@ class TreeMenuView extends StatelessWidget {
 
   Widget _desktop(NavCtrl controller, Map<String, List<String>> data) {
     return TreeView(
+            name: controller.selectedScript.value,
             data: data,
             onTap: (e) {
               controller.switchContent(e);
@@ -31,6 +32,7 @@ class TreeMenuView extends StatelessWidget {
   Widget _mobile(NavCtrl controller, Map<String, List<String>> data,
       BuildContext context) {
     return TreeView(
+            name: controller.selectedScript.value,
             data: data,
             onTap: (e) {
               controller.switchContent(e);

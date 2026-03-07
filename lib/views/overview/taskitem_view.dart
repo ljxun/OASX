@@ -108,6 +108,7 @@ class TaskItemView extends StatelessWidget {
         double maxWidth = min(750, Get.width * 0.9);
         double maxHeight = Get.height * 0.7;
         final argsController = Get.find<ArgsController>();
+        final overviewController = Get.find<OverviewController>(tag: model.scriptName);
         Get.defaultDialog(
             title: '${model.taskName.value.tr}${I18n.setting.tr}',
             content: FutureBuilder<void>(
@@ -120,6 +121,7 @@ class TaskItemView extends StatelessWidget {
                     return Text('Error: ${snapshot.error}');
                   } else {
                     return Args(
+                      overviewController: overviewController,
                       scriptName: model.scriptName,
                       taskName: model.taskName.value,
                       groupDraggable: false,
