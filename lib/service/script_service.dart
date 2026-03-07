@@ -25,6 +25,12 @@ class ScriptService extends GetxService {
     final savedOrder = _storage.read<List<dynamic>>(StorageKey.scriptOrder.name)?.map((e) => e.toString()).toList() ?? [];
     
     final scriptListFromApi = await ApiClient().getScriptList();
+    print('=== API 返回的脚本列表 ===');
+    print('原始数据：$scriptListFromApi');
+    for (var name in scriptListFromApi) {
+      print('脚本名："$name" (长度=${name.length}, bytes=${name.codeUnits.join(",")})');
+    }
+    print('========================');
 
     // Sort the list from the API based on the saved order
     final sortedScriptList = _sortScripts(scriptListFromApi, savedOrder);
@@ -135,10 +141,18 @@ class ScriptService extends GetxService {
 
   void addScriptModel(dynamic sm) {
     if (sm is String) {
+      print('=== 添加脚本模型 ===');
+      print('原始名称："$sm"');
+      print('字节码：${sm.codeUnits.join(",")}');
       sm = ScriptModel(sm);
     }
+    print('脚本模型名称："${sm.name}"');
+    print('====================');
+    
     if (scriptModelMap.containsKey(sm.name)) return;
     scriptModelMap[sm.name] = sm;
+    print('已添加，总数：${scriptModelMap.length}');
+    print('所有脚本：${scriptModelMap.keys.toList()}');
   }
 
   void updateScriptModel(ScriptModel sm) {
@@ -162,7 +176,20 @@ class ScriptService extends GetxService {
   }
 
   ScriptModel? findScriptModel(String name) {
-    return scriptModelMap[name];
+    print('DEBUG findScriptModel: looking for "$name"');
+    print('DEBUG: Available scripts: ${scriptModelMap.keys.toList()}');
+    
+    final result = scriptModelMap[name];
+    if (result == null) {
+      print('DEBUG: Script "$name" NOT FOUND');
+      // Try to find similar names (for debugging encoding issues)
+      scriptModelMap.keys.forEach((key) {
+        print('DEBUG: Comparing with "$key" (length=${key.length}, bytes=${key.codeUnits})');
+      });
+    } else {
+      print('DEBUG: Found script "$name"');
+    }
+    return result;
   }
 
   bool isRunning(String scriptName) {

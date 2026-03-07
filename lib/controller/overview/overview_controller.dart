@@ -3,13 +3,23 @@ part of overview;
 class OverviewController extends GetxController with LogMixin {
   String name;
   final scriptService = Get.find<ScriptService>();
-  late final scriptModel = scriptService.findScriptModel(name)!;
+  late final ScriptModel scriptModel;
   final isWaitingLoading = false.obs;
   final isPendingLoading = false.obs;
 
   final selectedTaskName = Rx<String?>(null);
 
-  OverviewController({required this.name});
+  OverviewController({required this.name}) {
+    // Initialize scriptModel in constructor to handle null case
+    final model = scriptService.findScriptModel(name);
+    if (model == null) {
+      print('ERROR in OverviewController: ScriptModel not found for name: $name');
+      print('Available scripts: ${scriptService.scriptModelMap.keys.toList()}');
+      Get.snackbar('错误', '找不到脚本配置：$name');
+      throw Exception('找不到脚本配置：$name');
+    }
+    scriptModel = model;
+  }
 
   @override
   void onInit() {

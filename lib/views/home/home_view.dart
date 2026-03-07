@@ -193,7 +193,8 @@ class HomeView extends GetView<HomeController> {
         if (controller.isSelectionModeActive.value) {
           controller.toggleSelection(scriptModel.name);
         } else {
-          Get.toNamed('/overview/${scriptModel.name}');
+          // 使用查询参数而不是路径参数传递名称
+          Get.toNamed('/overview', arguments: {'name': scriptModel.name});
         }
       },
       onSecondaryTapDown: (details) {

@@ -23,10 +23,11 @@ void main() async {
   await initService();
 
   runApp(
-    DevicePreview(
-      enabled: !kReleaseMode && (PlatformUtils.isWindows),
-      builder: (context) => const OASXApp(), // Wrap your app
-    ),
+    // DevicePreview(
+    //   enabled: !kReleaseMode && (PlatformUtils.isWindows),
+    //   builder: (context) => const OASXApp(), // Wrap your app
+    // );
+    const OASXApp(),
   );
 }
 
@@ -38,24 +39,22 @@ class OASXApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeService = Get.find<LocaleService>();
 
-    return ResponsiveApp(builder: (context) {
-      return GetMaterialApp(
-        // useInheritedMediaQuery: true,
-        debugShowCheckedModeBanner: false,
-        // locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder, // 上面三个是使用device_preview
-        scrollBehavior: GlobalBehavior(),
-        translations: Messages(),
-        locale: localeService.currentLocale,
-        fallbackLocale: localeService.fallbackLocale, //语言选择无效时，备用语言
-        title: '',
-        onInit: onInit,
-        initialRoute: Routes.initial,
-        getPages: Routes.routes,
-        theme: lightTheme,
-        darkTheme: darkTheme,
-      );
-    });
+    return GetMaterialApp(
+      // useInheritedMediaQuery: true,
+      debugShowCheckedModeBanner: false,
+      // locale: DevicePreview.locale(context),
+      // builder: DevicePreview.appBuilder, // 上面三个是使用 device_preview
+      scrollBehavior: GlobalBehavior(),
+      translations: Messages(),
+      locale: localeService.currentLocale,
+      fallbackLocale: localeService.fallbackLocale, //语言选择无效时，备用语言
+      title: '',
+      onInit: onInit,
+      initialRoute: Routes.initial,
+      getPages: Routes.routes,
+      theme: lightTheme,
+      darkTheme: darkTheme,
+    );
   }
 
   /// 但是我不能确定 Getx 框架这个时候是否成功初始化

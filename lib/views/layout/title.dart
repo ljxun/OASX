@@ -30,7 +30,9 @@ class OverviewTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String scriptName = Get.parameters['name'] ?? 'Overview';
+    // Try to get name from arguments first (new way), then from parameters (old way)
+    final args = Get.arguments as Map<String, dynamic>?;
+    final String scriptName = args?['name'] as String? ?? Get.parameters['name'] ?? 'Overview';
     
     bool backButton = switch (Theme.of(context).platform) {
       TargetPlatform.android => false, // AppBar will handle it automatically
