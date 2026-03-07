@@ -17,6 +17,7 @@ class HomeController extends GetxController {
 
   void enterSelectionMode() {
     isSelectionModeActive.value = true;
+    selectedScripts.assignAll(scriptModels.map((m) => m.name).toList());
   }
 
   void exitSelectionMode() {
