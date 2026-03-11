@@ -132,6 +132,23 @@ class ArgumentModel {
   });
 
   factory ArgumentModel.fromJson(Map<String, dynamic> json) {
+    dynamic value = json['value'];
+    String type = json['type'] as String;
+
+    if (type == 'time_delta' && (value is int || value is double)) {
+      Duration duration = Duration(seconds: value.toInt());
+      int day0 = duration.inDays;
+      int hour0 = duration.inHours.remainder(24);
+      int minute0 = duration.inMinutes.remainder(60);
+      int second = duration.inSeconds.remainder(60);
+
+      String day = day0 < 10 ? '0$day0' : '$day0';
+      String hour = hour0 < 10 ? '0$hour0' : '$hour0';
+      String minute = minute0 < 10 ? '0$minute0' : '$minute0';
+      String seconds = second < 10 ? '0$second' : '$second';
+      value = '$day $hour:$minute:$seconds';
+    }
+
     return ArgumentModel(
         List<String>.from(json["enumEnum"]?.map((x) => x) ?? []),
         json['minimum'],
@@ -139,8 +156,8 @@ class ArgumentModel {
         json['defaultValue'],
         json['description'],
         title: json['name'] as String,
-        value: json['value'],
-        type: json['type'] as String);
+        value: value,
+        type: type);
   }
 
   set setValue(dynamic newValue) => value = newValue;

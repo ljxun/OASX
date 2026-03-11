@@ -51,17 +51,7 @@ String ensureTimeDeltaString(dynamic value) {
     // 应该加上一个 格式的验证
     return value;
   } else if (value is int || value is double) {
-    Duration duration = Duration(seconds: value.toInt());
-    int day0 = duration.inDays;
-    int hour0 = duration.inHours.remainder(24);
-    int minute0 = duration.inMinutes.remainder(60);
-    int second = duration.inSeconds.remainder(60);
-
-    String day = day0 < 10 ? '0$day0' : '$day0';
-    String hour = hour0 < 10 ? '0$hour0' : '$hour0';
-    String minute = minute0 < 10 ? '0$minute0' : '$minute0';
-    String seconds = second < 10 ? '0$second' : '$second';
-    return '$day $hour:$minute:$seconds';
+    return value.toString();
   }
   return '00 00:00:00';
 }
@@ -224,13 +214,8 @@ class TimeDeltaPickerState extends DateTimePickerBaseState {
     if (value is String) {
       result = value.split(RegExp(r'\D+'));
     }
-    if (result is double) {
-      Duration duration = Duration(seconds: value.toInt());
-      String day = duration.inDays.toString();
-      String hour = duration.inHours.toString();
-      String minute = duration.inMinutes.toString();
-      String seconds = duration.inSeconds.toString();
-      result = [day, hour, minute, seconds];
+    if (value is double) {
+      result = value.toString().split(RegExp(r'\D+'));
     }
     return result;
   }
