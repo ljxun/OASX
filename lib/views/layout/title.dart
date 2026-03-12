@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:oasx/views/home/home_controller.dart';
 import 'package:oasx/views/server/server_view.dart';
 import 'package:styled_widget/styled_widget.dart';
 

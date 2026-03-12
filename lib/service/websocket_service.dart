@@ -21,7 +21,8 @@ class WebSocketService extends GetxService {
       MessageListener? listener,
       bool force = false}) async {
     if (_clients.containsKey(name) &&
-        _clients[name]!.status.value == WsStatus.connected) {
+        _clients[name]!.status.value == WsStatus.connected &&
+        !force) {
       return _clients[name]!._addListener(listener);
     }
 
@@ -103,6 +104,7 @@ class WebSocketClient {
   static const int maxReconnect = 3;
   static const int maxReconnectAfterClosed = 2;
   final status = WsStatus.connecting.obs;
+  Timer? _heartbeatTimer;
 
   WebSocketClient({
     required this.name,
@@ -187,6 +189,7 @@ class WebSocketClient {
       await _channel!.ready;
       status.value = WsStatus.connected;
       printInfo(info: "ws[$name] connected!");
+      _startHeartbeat();
 
       // 接收数据通道监听
       _channel!.stream.listen(
@@ -238,6 +241,7 @@ class WebSocketClient {
   /// reconnect(optional): default false to stop reconnect websocket
   Future<void> _close(int code, String reason, {bool reconnect = false}) async {
     _shouldReconnect = reconnect;
+    _stopHeartbeat();
     try {
       await _channel?.sink.close(code, reason);
     } catch (e) {
@@ -281,5 +285,16 @@ class WebSocketClient {
     status.value = WsStatus.reconnecting;
     Future.delayed(
         Duration(seconds: _reconnectCount <= 1 ? 0 : 2), () => _connect());
+  }
+
+  void _startHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 15), (timer) {
+      send('ping');
+    });
+  }
+
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
   }
 }

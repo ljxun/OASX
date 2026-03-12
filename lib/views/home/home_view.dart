@@ -172,6 +172,12 @@ class HomeView extends GetView<HomeController> {
                   ),
                   const SizedBox(height: 10),
                   FloatingActionButton(
+                    heroTag: 'refresh',
+                    onPressed: () => controller.reconnect(),
+                    child: const Icon(Icons.refresh),
+                  ),
+                  const SizedBox(height: 10),
+                  FloatingActionButton(
                     heroTag: 'settings',
                     onPressed: () => Get.toNamed('/settings'),
                     child: const Icon(Icons.settings),

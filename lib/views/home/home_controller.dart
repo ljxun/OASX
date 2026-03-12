@@ -192,4 +192,13 @@ class HomeController extends GetxController {
     }
     return true;
   }
+
+  Future<void> reconnect() async {
+    Get.snackbar('提示', '正在重新连接...',
+        duration: const Duration(milliseconds: 2000));
+    final wsService = Get.find<WebSocketService>();
+    for (var name in _scriptService.scriptModelMap.keys) {
+      wsService.connect(name: name, force: true);
+    }
+  }
 }
