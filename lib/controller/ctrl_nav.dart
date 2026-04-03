@@ -168,10 +168,7 @@ class NavCtrl extends GetxController {
       tipMsg =
           '${model.scriptName}[${model.taskName.value.tr}] -> $copyConfigName';
     }
-    if (ret) {
-      Get.snackbar(I18n.copy_success.tr, tipMsg,
-          duration: const Duration(seconds: 2));
-    }
+    // 移除内部的 snackbar，由调用者统一显示
     isCopyLoadingMap[copyConfigName] = false;
     return ret;
   }
