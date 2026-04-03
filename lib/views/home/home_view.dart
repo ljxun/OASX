@@ -70,7 +70,7 @@ class HomeView extends GetView<HomeController> {
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Center(
                     child: Text(
-                      '阴阳师助手',
+                      '',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
