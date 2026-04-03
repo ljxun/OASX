@@ -5,6 +5,7 @@ import 'package:oasx/model/script_model.dart';
 import 'package:oasx/translation/i18n_content.dart';
 import 'package:oasx/utils/platform_utils.dart';
 import 'package:oasx/views/home/home_controller.dart';
+import 'package:oasx/views/nav/view_nav.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
@@ -199,8 +200,13 @@ class HomeView extends GetView<HomeController> {
         if (controller.isSelectionModeActive.value) {
           controller.toggleSelection(scriptModel.name);
         } else {
-          // 使用查询参数而不是路径参数传递名称
-          Get.toNamed('/overview', arguments: {'name': scriptModel.name});
+          // 点击卡片进入对应的配置页面（Overview）
+          // 需要在 NavCtrl 中切换选中的脚本
+          final navController = Get.find<NavCtrl>();
+          final scriptIndex = navController.navNameList.value.indexOf(scriptModel.name);
+          if (scriptIndex != -1) {
+            navController.switchScript(scriptIndex);
+          }
         }
       },
       onSecondaryTapDown: (details) {

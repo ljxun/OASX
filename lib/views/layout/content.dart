@@ -11,18 +11,26 @@ import 'package:oasx/views/overview/overview_view.dart';
 Widget content() {
   return GetX<NavCtrl>(builder: (controller) {
     // 确保状态同步，如果 navNameList 为空则显示加载中
-    if (controller.navNameList.isEmpty) {
+    if (controller.navNameList.value.isEmpty) {
       return const Center(child: CircularProgressIndicator());
+    }
+    
+    // 如果是首页，直接返回完整的 HomeView，不使用导航栏框架
+    if (controller.selectedScript.value == 'Home' && 
+        controller.selectedMenu.value == 'Home') {
+      return const HomeView();
     }
     
     return switch ([
       controller.selectedScript.value,
       controller.selectedMenu.value
     ]) {
-      ['Home', 'Home'] => const HomeView(),
       // ignore: prefer_const_constructors, unused_local_variable
       [String name, 'Overview'] => Overview(),
-      _ => const Args(),
+      _ => Args(
+        scriptName: controller.selectedScript.value,
+        taskName: controller.selectedMenu.value,
+      ),
     };
   });
 }

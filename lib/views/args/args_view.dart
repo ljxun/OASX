@@ -38,6 +38,16 @@ class Args extends StatelessWidget {
       final navController = Get.find<NavCtrl>();
       final selectedScript = navController.selectedScript.value;
       final selectedTask = navController.selectedMenu.value;
+      
+      // 使用传入的 scriptName 或从导航栏获取的
+      final effectiveScriptName = scriptName ?? selectedScript;
+      final effectiveTaskName = taskName ?? selectedTask;
+      
+      // 自动加载配置数据
+      if (controller.groupsName.value.isEmpty) {
+        controller.loadGroups(config: effectiveScriptName, task: effectiveTaskName);
+      }
+      
       return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: ExpansionTileGroup(

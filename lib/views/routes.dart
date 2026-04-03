@@ -5,6 +5,7 @@ import 'package:oasx/views/layout/binding.dart';
 import 'package:oasx/views/login/login_view.dart';
 import 'package:oasx/views/settings/settings_view.dart';
 import 'package:oasx/views/server/server_view.dart';
+import 'package:oasx/views/args/args_view.dart';
 
 class Routes {
   /// when the app is opened, this page will be the first to be shown
@@ -30,6 +31,13 @@ class Routes {
       page: () => const ServerView(),
       binding: BindingsBuilder(() {
         Get.put<ServerController>(ServerController());
+      }),
+    ),
+    GetPage(
+      name: '/args',
+      page: () => const Args(),
+      binding: BindingsBuilder(() {
+        Get.put<ArgsController>(ArgsController());
       }),
     ),
   ];
