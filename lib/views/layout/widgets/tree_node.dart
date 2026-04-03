@@ -6,6 +6,8 @@ import 'package:oasx/views/nav/view_nav.dart';
 import 'package:oasx/views/overview/overview_view.dart';
 import 'package:styled_widget/styled_widget.dart';
 
+import '../../../translation/i18n_content.dart';
+
 // 第一级 节点
 class TreeNode1 extends StatefulWidget {
   final String title;
@@ -87,14 +89,18 @@ class TreeNode1State extends State<TreeNode1> {
             'source': 'treeNode'
           },
           feedback: _buildFeedback(context),
-          child: TextButton(
+          child: GestureDetector(
+            onSecondaryTapUp: (_) => _showCopyDialog(context),
+            child: TextButton(
               style: ButtonStyle(
                 padding:
                     WidgetStateProperty.all(const EdgeInsets.only(left: 20)),
                 alignment: Alignment.centerLeft,
               ),
               onPressed: onPressed,
-              child: title),
+              child: title,
+            ),
+          ),
         );
       });
     }
@@ -143,6 +149,89 @@ class TreeNode1State extends State<TreeNode1> {
               .height(30)
               .paddingAll(8)
               .opacity(0.8),
+    );
+  }
+
+  // 显示复制对话框
+  void _showCopyDialog(BuildContext context) {
+    final navController = Get.find<NavCtrl>();
+    final currentScript = navController.selectedScript.value;
+    final currentTask = widget.title;
+    
+    // 获取所有配置列表（排除当前配置和首页）
+    final configList = navController.navNameList.value
+        .where((name) => name != currentScript && name != 'Home')
+        .toList();
+    
+    // 如果没有可复制的配置，直接返回
+    if (configList.isEmpty) {
+      Get.snackbar(
+        '提示',
+        '没有其他可复制的配置',
+        duration: const Duration(seconds: 2),
+      );
+      return;
+    }
+    
+    // 已选中的配置
+    final selectedConfigs = <String>{}.obs;
+    
+    Get.defaultDialog(
+      title: '复制到...',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: configList.map((configName) {
+          return Obx(() => CheckboxListTile(
+            value: selectedConfigs.contains(configName),
+            onChanged: (value) {
+              if (value == true) {
+                selectedConfigs.add(configName);
+              } else {
+                selectedConfigs.remove(configName);
+              }
+            },
+            title: Text(configName.tr),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+          ));
+        }).toList(),
+      ),
+      textConfirm: I18n.confirm.tr,
+      textCancel: I18n.cancel.tr,
+      onConfirm: () async {
+        if (selectedConfigs.isNotEmpty) {
+          final model = TaskItemModel(
+            currentScript,
+            currentTask,
+            '',
+            groupName: null,
+          );
+          
+          // 复制到所有选中的配置，等待所有操作完成
+          int successCount = 0;
+          for (final targetConfig in selectedConfigs) {
+            final result = await navController.copyTask(model, targetConfig);
+            if (result) {
+              successCount++;
+            }
+          }
+          
+          // 关闭对话框
+          Get.back();
+          
+          // 显示复制结果
+          if (successCount > 0) {
+            String tipMsg = '${model.scriptName}-[${model.taskName.value.tr}] -> $selectedConfigs';
+            Get.snackbar(
+              I18n.copy_success.tr,
+              '$tipMsg 成功复制 $successCount/${selectedConfigs.length} 个配置',
+              duration: const Duration(seconds: 2),
+            );
+          }
+        } else {
+          Get.back();
+        }
+      },
+      onCancel: () => Get.back(),
     );
   }
 }

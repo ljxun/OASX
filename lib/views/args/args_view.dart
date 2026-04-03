@@ -207,13 +207,7 @@ class Args extends StatelessWidget {
 
           // 显示复制结果
           if (successCount > 0) {
-            String tipMsg = '';
-            if (model.groupName != null && model.groupName!.isNotEmpty) {
-              tipMsg = '${model.scriptName}-[${model.taskName.value.tr}][${model.groupName!.tr}] -> [$selectedConfigs]';
-            } else {
-              tipMsg = '${model.scriptName}-[${model.taskName.value.tr}] -> [$selectedConfigs]';
-            }
-
+            String tipMsg = '${model.scriptName}-[${model.taskName.value.tr}][${model.groupName!.tr}] -> $selectedConfigs';
             Get.snackbar(
               I18n.copy_success.tr,
               '$tipMsg 成功复制 $successCount/${selectedConfigs.length} 个配置',
