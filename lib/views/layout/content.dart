@@ -10,6 +10,11 @@ import 'package:oasx/views/overview/overview_view.dart';
 
 Widget content() {
   return GetX<NavCtrl>(builder: (controller) {
+    // 确保状态同步，如果 navNameList 为空则显示加载中
+    if (controller.navNameList.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
     return switch ([
       controller.selectedScript.value,
       controller.selectedMenu.value

@@ -202,4 +202,28 @@ class ScriptService extends GetxService {
     autoScriptList.sort();
     _storage.write(StorageKey.autoScriptList.name, jsonEncode(autoScriptList));
   }
+
+  void reorderScripts(int oldIndex, int newIndex) {
+    final keys = scriptModelMap.keys.toList();
+    if (oldIndex >= 0 && oldIndex < keys.length && 
+        newIndex >= 0 && newIndex < keys.length) {
+      final oldKey = keys[oldIndex];
+      final oldModel = scriptModelMap.remove(oldKey);
+      
+      final newKeys = scriptModelMap.keys.toList();
+      if (newIndex >= newKeys.length) {
+        scriptModelMap[oldKey] = oldModel!;
+      } else {
+        final insertKey = newKeys[newIndex];
+        final tempMap = <String, ScriptModel>{};
+        scriptModelMap.forEach((key, value) {
+          if (key == insertKey) {
+            tempMap[oldKey] = oldModel!;
+          }
+          tempMap[key] = value;
+        });
+        scriptModelMap.assignAll(tempMap);
+      }
+    }
+  }
 }
