@@ -78,12 +78,11 @@ jobs:
             choco install upx -y
             echo "UPX version:"
             upx --version
-        # 使用UPX优化体积
-        - name: Compress exe/dll with UPX
+        # 使用UPX优化体积（仅压缩exe，不压缩dll以避免0xc000007b错误）
+        - name: Compress exe with UPX
           run: |
             cd build/windows/x64/runner/Release
-            upx --best --lzma *.exe || true
-            upx --best --lzma *.dll || true
+            upx --best oasx.exe || true
         # 打包
         - name: Package Release zip
           run: |
