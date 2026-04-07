@@ -79,10 +79,10 @@ class HomeView extends GetView<HomeController> {
                 child: Obx(
                   () {
                     final scriptModels = controller.scriptModels;
-                    // 响应式布局：手机端使用小边距，桌面端使用大边距
-                    final horizontalPadding = PlatformUtils.isMobile ? 12.0 : 100.0;
-                    final maxCrossAxisExtent = PlatformUtils.isMobile ? 400.0 : 350.0;
-                    final childAspectRatio = PlatformUtils.isMobile ? 2.0 : 1.7;
+                    // 响应式布局:手机端使用更大的边距和更窄的卡片
+                    final horizontalPadding = PlatformUtils.isMobile ? 24.0 : 100.0;
+                    final maxCrossAxisExtent = PlatformUtils.isMobile ? 320.0 : 350.0;
+                    final childAspectRatio = PlatformUtils.isMobile ? 1.8 : 1.7;
                     
                     return GridView.builder(
                       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
