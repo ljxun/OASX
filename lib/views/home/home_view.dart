@@ -79,15 +79,20 @@ class HomeView extends GetView<HomeController> {
                 child: Obx(
                   () {
                     final scriptModels = controller.scriptModels;
+                    // 响应式布局：手机端使用小边距，桌面端使用大边距
+                    final horizontalPadding = PlatformUtils.isMobile ? 12.0 : 100.0;
+                    final maxCrossAxisExtent = PlatformUtils.isMobile ? 400.0 : 350.0;
+                    final childAspectRatio = PlatformUtils.isMobile ? 2.0 : 1.7;
+                    
                     return GridView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 100.0),
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                       itemCount: scriptModels.length,
                       gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 350,
+                          SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: maxCrossAxisExtent,
                         mainAxisSpacing: 10,
                         crossAxisSpacing: 10,
-                        childAspectRatio: 1.7,
+                        childAspectRatio: childAspectRatio,
                       ),
                       itemBuilder: (context, index) {
                         final scriptModel = scriptModels[index];
