@@ -82,7 +82,7 @@ class HomeView extends GetView<HomeController> {
                     // 响应式布局：手机端使用小边距，桌面端使用大边距
                     final horizontalPadding = PlatformUtils.isMobile ? 48.0 : 100.0;
                     final maxCrossAxisExtent = PlatformUtils.isMobile ? 400.0 : 350.0;
-                    final childAspectRatio = PlatformUtils.isMobile ? 2.0 : 1.7;
+                    final childAspectRatio = 1.7;
                     
                     return GridView.builder(
                       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
