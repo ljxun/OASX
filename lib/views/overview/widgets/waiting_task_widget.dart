@@ -67,6 +67,7 @@ class _WaitingWidget extends StatelessWidget {
                       child: TaskItemView(
                         model,
                         source: 'waiting',
+                        controller: controller,
                       ),
                     );
                   },

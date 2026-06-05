@@ -24,6 +24,7 @@ class _RunningWidget extends StatelessWidget {
             task,
             source: 'running',
             enableDrag: false,
+            controller: controller,
           ).constrained(minHeight: 48);
         }
         return Slidable(
@@ -55,6 +56,7 @@ class _RunningWidget extends StatelessWidget {
             task,
             source: 'running',
             enableDrag: true,
+            controller: controller,
           ).constrained(minHeight: 48),
         );
       }).clipRect()

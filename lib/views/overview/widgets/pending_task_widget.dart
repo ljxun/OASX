@@ -66,6 +66,7 @@ class _PendingWidget extends StatelessWidget {
                     child: TaskItemView(
                       model,
                       source: 'pending',
+                      controller: controller,
                     ),
                   );
                 },
