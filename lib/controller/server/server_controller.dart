@@ -83,9 +83,11 @@ class ServerController extends GetxController with LogMixin {
   String get pathAdb =>
       '${rootPathServer.value}\\toolkit\\Lib\\site-packages\\adbutils\\binaries';
   String get pathScripts => '${rootPathServer.value}\\toolkit\\Scripts';
+  String get pathPythonLib => '${rootPathServer.value}\\toolkit\\Lib\\site-packages';
   Map<String, String> get pathPATH => {
         'PATH':
-            '${rootPathServer.value},$pathGit,$pathPython,$pathAdb,$pathScripts'
+            '${rootPathServer.value},$pathGit,$pathPython,$pathAdb,$pathScripts',
+        'PYTHONPATH': '$pathPython;$pathPythonLib'
       };
   Shell get getShell => Shell(
         workingDirectory: rootPathServer.value,
