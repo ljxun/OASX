@@ -126,19 +126,16 @@ class TaskItemView extends StatelessWidget {
               }
             },
             tooltip: source == 'pending' 
-              ? '移动到等待中' 
+              ? '立即等待' 
               : source == 'waiting'
-                ? '移动到队列中'
-                : '移动到等待中',
+                ? '立即运行'
+                : '立即等待',
             padding: const EdgeInsets.all(4),
             constraints: const BoxConstraints(),
           ),
         // 设置按钮（齿轮图标，无边框）
-        TextButton(
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.all(0),
-            minimumSize: const Size(30, 30),
-          ),
+        IconButton(
+          icon: const Icon(Icons.settings, size: 24),
           onPressed: () async {
             double maxWidth = min(750, Get.width * 0.9);
             double maxHeight = Get.height * 0.7;
@@ -168,8 +165,10 @@ class TaskItemView extends StatelessWidget {
                       }
                     }));
           },
-          child: const Icon(Icons.settings, size: 24),
-        ),
+          tooltip: '设置',
+          padding: const EdgeInsets.all(4),
+          constraints: const BoxConstraints(),
+        ).paddingOnly(right: 8),
       ],
     );
   }
