@@ -12,4 +12,6 @@ enum StorageKey {
   temporaryDirectory,
   autoScriptList,
   autoDeploy,
+  homeCardOrder,
+  homeLayout,
 }

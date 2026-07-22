@@ -1,18 +1,73 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:oasx/api/api_client.dart';
+import 'package:oasx/model/const/storage_key.dart';
 import 'package:oasx/model/script_model.dart';
 import 'package:oasx/service/script_service.dart';
 import 'package:oasx/service/websocket_service.dart';
 import 'package:oasx/translation/i18n_content.dart';
+import 'package:oasx/utils/platform_utils.dart';
+
+enum HomeDisplayMode { grid, list }
 
 class HomeController extends GetxController {
   final ScriptService _scriptService = Get.find<ScriptService>();
+  final _storage = GetStorage();
   List<ScriptModel> get scriptModels =>
       _scriptService.scriptModelMap.values.toList();
 
   final RxList<String> selectedScripts = <String>[].obs;
   final RxBool isSelectionModeActive = false.obs;
+
+  static double get _defaultCardWidth => PlatformUtils.isMobile ? 400.0 : 350.0;
+  static const double _defaultCardHeight = 200.0;
+
+  final displayMode = HomeDisplayMode.grid.obs;
+  final columns = 0.obs; // 0 = 按卡片宽度自动计算
+  late final cardWidth = _defaultCardWidth.obs;
+  final cardHeight = _defaultCardHeight.obs;
+
+  @override
+  void onInit() {
+    _loadLayout();
+    super.onInit();
+  }
+
+  void _loadLayout() {
+    final raw = _storage.read(StorageKey.homeLayout.name);
+    if (raw is! String || raw.isEmpty) return;
+    try {
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      displayMode.value =
+          map['mode'] == 'list' ? HomeDisplayMode.list : HomeDisplayMode.grid;
+      columns.value = (map['columns'] as num?)?.toInt() ?? 0;
+      cardWidth.value = (map['cardWidth'] as num?)?.toDouble() ?? cardWidth.value;
+      cardHeight.value =
+          (map['cardHeight'] as num?)?.toDouble() ?? cardHeight.value;
+    } catch (_) {}
+  }
+
+  void saveLayout() {
+    _storage.write(
+        StorageKey.homeLayout.name,
+        jsonEncode({
+          'mode': displayMode.value == HomeDisplayMode.list ? 'list' : 'grid',
+          'columns': columns.value,
+          'cardWidth': cardWidth.value,
+          'cardHeight': cardHeight.value,
+        }));
+  }
+
+  void resetLayout() {
+    displayMode.value = HomeDisplayMode.grid;
+    columns.value = 0;
+    cardWidth.value = _defaultCardWidth;
+    cardHeight.value = _defaultCardHeight;
+    saveLayout();
+  }
 
   void enterSelectionMode() {
     isSelectionModeActive.value = true;
@@ -47,9 +102,6 @@ class HomeController extends GetxController {
   }
 
   void onReorder(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     _scriptService.reorderScripts(oldIndex, newIndex);
   }
 

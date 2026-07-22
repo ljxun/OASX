@@ -103,6 +103,15 @@ final Map<String, String> _cn_ui = {
   I18n.login_error: '登录失败',
   I18n.login_error_msg: 'OAS连接失败,请确认OAS正在运行',
   I18n.success: '成功',
+  I18n.layout_settings: '布局设置',
+  I18n.display_mode: '显示模式',
+  I18n.grid_view: '网格',
+  I18n.list_view: '列表',
+  I18n.columns_per_row: '每行卡片数',
+  I18n.auto_fit: '自动',
+  I18n.card_width: '卡片宽度',
+  I18n.card_height: '卡片高度',
+  I18n.restore_default: '恢复默认',
 };
 
 final Map<String, String> _cn_menu = {

@@ -260,4 +260,13 @@ class I18n {
   static const String go_oasx_release = 'Click to download';
   static const String tip = 'Tip';
   static const String copy_success = 'Copy success';
+  static const String layout_settings = 'Layout settings';
+  static const String display_mode = 'Display mode';
+  static const String grid_view = 'Grid';
+  static const String list_view = 'List';
+  static const String columns_per_row = 'Columns per row';
+  static const String auto_fit = 'Auto';
+  static const String card_width = 'Card width';
+  static const String card_height = 'Card height';
+  static const String restore_default = 'Restore default';
 }

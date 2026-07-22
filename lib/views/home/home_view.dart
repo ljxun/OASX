@@ -67,72 +67,254 @@ class HomeView extends GetView<HomeController> {
             children: [
               if (!controller.isSelectionModeActive.value)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Center(
-                    child: Text(
-                      '',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.tune),
+                        tooltip: I18n.layout_settings.tr,
+                        onPressed: () => _showLayoutSettings(context),
+                      ),
+                    ],
                   ),
                 ),
               Expanded(
                 child: Obx(
-                  () {
-                    final scriptModels = controller.scriptModels;
-                    // 响应式布局：手机端使用小边距，桌面端使用大边距
-                    final horizontalPadding = PlatformUtils.isMobile ? 48.0 : 100.0;
-                    final maxCrossAxisExtent = PlatformUtils.isMobile ? 400.0 : 350.0;
-                    final childAspectRatio = 1.7;
-                    
-                    return GridView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                      itemCount: scriptModels.length,
-                      gridDelegate:
-                          SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: maxCrossAxisExtent,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        childAspectRatio: childAspectRatio,
-                      ),
-                      itemBuilder: (context, index) {
-                        final scriptModel = scriptModels[index];
-                        return DragTarget<String>(
-                          builder: (context, candidateData, rejectedData) {
-                            return Draggable<String>(
-                              data: scriptModel.name,
-                              feedback: Material(
-                                type: MaterialType.transparency,
-                                child: SizedBox(
-                                  width: 350,
-                                  child: _buildCard(context, scriptModel,
-                                      isDragging: true),
-                                ),
-                              ),
-                              childWhenDragging: Opacity(
-                                opacity: 0.5,
-                                child: _buildCard(context, scriptModel),
-                              ),
-                              child: _buildCard(context, scriptModel),
-                            );
-                          },
-                          onWillAccept: (data) => data != scriptModel.name,
-                          onAccept: (draggedItemName) {
-                            final oldIndex = controller.scriptModels
-                                .indexWhere((m) => m.name == draggedItemName);
-                            final newIndex = index;
-                            if (oldIndex != -1) {
-                              controller.onReorder(oldIndex, newIndex);
-                            }
-                          },
-                        );
-                      },
-                    );
-                  },
+                  () => controller.displayMode.value == HomeDisplayMode.list
+                      ? _buildListView(context)
+                      : _buildGridView(context),
                 ),
               ),
             ],
           ),
         ));
+  }
+
+  Widget _buildGridView(BuildContext context) {
+    final scriptModels = controller.scriptModels;
+    final horizontalPadding = PlatformUtils.isMobile ? 16.0 : 48.0;
+    final columns = controller.columns.value;
+    final cardWidth = controller.cardWidth.value;
+    final cardHeight = controller.cardHeight.value;
+
+    final gridDelegate = columns > 0
+        ? SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            mainAxisExtent: cardHeight,
+          )
+        : SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: cardWidth,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            mainAxisExtent: cardHeight,
+          ) as SliverGridDelegate;
+
+    return GridView.builder(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      itemCount: scriptModels.length,
+      gridDelegate: gridDelegate,
+      itemBuilder: (context, index) {
+        final scriptModel = scriptModels[index];
+        return DragTarget<String>(
+          builder: (context, candidateData, rejectedData) {
+            return Draggable<String>(
+              data: scriptModel.name,
+              feedback: Material(
+                type: MaterialType.transparency,
+                child: SizedBox(
+                  width: cardWidth,
+                  height: cardHeight,
+                  child: _buildCard(context, scriptModel, isDragging: true),
+                ),
+              ),
+              childWhenDragging: Opacity(
+                opacity: 0.5,
+                child: _buildCard(context, scriptModel),
+              ),
+              child: _buildCard(context, scriptModel),
+            );
+          },
+          onWillAccept: (data) => data != scriptModel.name,
+          onAccept: (draggedItemName) {
+            final oldIndex = controller.scriptModels
+                .indexWhere((m) => m.name == draggedItemName);
+            if (oldIndex != -1) {
+              controller.onReorder(oldIndex, index);
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildListView(BuildContext context) {
+    final scriptModels = controller.scriptModels;
+    final horizontalPadding = PlatformUtils.isMobile ? 16.0 : 48.0;
+    final cardHeight = controller.cardHeight.value;
+
+    return ReorderableListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      itemCount: scriptModels.length,
+      buildDefaultDragHandles: false,
+      onReorder: (oldIndex, newIndex) {
+        if (oldIndex < newIndex) newIndex -= 1;
+        controller.onReorder(oldIndex, newIndex);
+      },
+      itemBuilder: (context, index) {
+        final scriptModel = scriptModels[index];
+        return Padding(
+          key: ValueKey(scriptModel.name),
+          padding: const EdgeInsets.only(bottom: 10),
+          child: SizedBox(
+            height: cardHeight,
+            child: Row(
+              children: [
+                ReorderableDragStartListener(
+                  index: index,
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Icon(Icons.drag_indicator),
+                  ),
+                ),
+                Expanded(child: _buildCard(context, scriptModel)),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLayoutSettings(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Obx(() {
+            final isGrid =
+                controller.displayMode.value == HomeDisplayMode.grid;
+            return ListView(
+              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(I18n.layout_settings.tr,
+                        style: Theme.of(context).textTheme.titleMedium),
+                    TextButton.icon(
+                      icon: const Icon(Icons.restart_alt, size: 18),
+                      label: Text(I18n.restore_default.tr),
+                      onPressed: controller.resetLayout,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: Text(I18n.display_mode.tr)),
+                    SegmentedButton<HomeDisplayMode>(
+                      segments: [
+                        ButtonSegment(
+                          value: HomeDisplayMode.grid,
+                          icon: const Icon(Icons.grid_view_rounded),
+                          label: Text(I18n.grid_view.tr),
+                        ),
+                        ButtonSegment(
+                          value: HomeDisplayMode.list,
+                          icon: const Icon(Icons.view_agenda_outlined),
+                          label: Text(I18n.list_view.tr),
+                        ),
+                      ],
+                      selected: {controller.displayMode.value},
+                      onSelectionChanged: (v) {
+                        controller.displayMode.value = v.first;
+                        controller.saveLayout();
+                      },
+                    ),
+                  ],
+                ),
+                if (isGrid) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(child: Text(I18n.columns_per_row.tr)),
+                      DropdownButton<int>(
+                        value: controller.columns.value,
+                        items: [
+                          DropdownMenuItem(
+                              value: 0, child: Text(I18n.auto_fit.tr)),
+                          for (var i = 1; i <= 6; i++)
+                            DropdownMenuItem(value: i, child: Text('$i')),
+                        ],
+                        onChanged: (v) {
+                          if (v == null) return;
+                          controller.columns.value = v;
+                          controller.saveLayout();
+                        },
+                      ),
+                    ],
+                  ),
+                  if (controller.columns.value == 0)
+                    _buildSliderTile(
+                      context,
+                      label: I18n.card_width.tr,
+                      value: controller.cardWidth.value,
+                      min: 200,
+                      max: 600,
+                      onChanged: (v) => controller.cardWidth.value = v,
+                      onChangeEnd: (_) => controller.saveLayout(),
+                    ),
+                ],
+                _buildSliderTile(
+                  context,
+                  label: I18n.card_height.tr,
+                  value: controller.cardHeight.value,
+                  min: 100,
+                  max: 400,
+                  onChanged: (v) => controller.cardHeight.value = v,
+                  onChangeEnd: (_) => controller.saveLayout(),
+                ),
+              ],
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  Widget _buildSliderTile(
+    BuildContext context, {
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+    required ValueChanged<double> onChangeEnd,
+  }) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        SizedBox(
+          width: 240,
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min,
+            max: max,
+            divisions: (max - min) ~/ 10,
+            label: value.round().toString(),
+            onChanged: onChanged,
+            onChangeEnd: onChangeEnd,
+          ),
+        ),
+        SizedBox(width: 40, child: Text(value.round().toString())),
+      ],
+    );
   }
 
   AppBar _buildMultiSelectAppBar(BuildContext context) {

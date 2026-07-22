@@ -25,6 +25,7 @@ class ScriptService extends GetxService {
     final scriptList = await ApiClient().getScriptList();
     if (scriptList.isNotEmpty) {
       await Future.wait(scriptList.map((name) => connectScript(name)));
+      _applySavedOrder();
     }
     autoScriptList.value =
         ((jsonDecode(_storage.read(StorageKey.autoScriptList.name)) as List?) ??
@@ -32,6 +33,32 @@ class ScriptService extends GetxService {
             .map((e) => e.toString())
             .toList();
     super.onInit();
+  }
+
+  void _applySavedOrder() {
+    final raw = _storage.read(StorageKey.homeCardOrder.name);
+    if (raw is! String || raw.isEmpty) return;
+    List<String> saved;
+    try {
+      saved = (jsonDecode(raw) as List).map((e) => e.toString()).toList();
+    } catch (_) {
+      return;
+    }
+    final ordered = <String, ScriptModel>{};
+    for (final name in saved) {
+      final model = scriptModelMap[name];
+      if (model != null) ordered[name] = model;
+    }
+    // 新增而未记录顺序的脚本排在末尾
+    scriptModelMap.forEach((name, model) {
+      ordered.putIfAbsent(name, () => model);
+    });
+    scriptModelMap.assignAll(ordered);
+  }
+
+  void _saveOrder() {
+    _storage.write(StorageKey.homeCardOrder.name,
+        jsonEncode(scriptModelMap.keys.toList()));
   }
 
   @override
@@ -205,25 +232,17 @@ class ScriptService extends GetxService {
 
   void reorderScripts(int oldIndex, int newIndex) {
     final keys = scriptModelMap.keys.toList();
-    if (oldIndex >= 0 && oldIndex < keys.length && 
-        newIndex >= 0 && newIndex < keys.length) {
-      final oldKey = keys[oldIndex];
-      final oldModel = scriptModelMap.remove(oldKey);
-      
-      final newKeys = scriptModelMap.keys.toList();
-      if (newIndex >= newKeys.length) {
-        scriptModelMap[oldKey] = oldModel!;
-      } else {
-        final insertKey = newKeys[newIndex];
-        final tempMap = <String, ScriptModel>{};
-        scriptModelMap.forEach((key, value) {
-          if (key == insertKey) {
-            tempMap[oldKey] = oldModel!;
-          }
-          tempMap[key] = value;
-        });
-        scriptModelMap.assignAll(tempMap);
-      }
+    if (oldIndex < 0 ||
+        oldIndex >= keys.length ||
+        newIndex < 0 ||
+        newIndex >= keys.length ||
+        oldIndex == newIndex) {
+      return;
     }
+    final key = keys.removeAt(oldIndex);
+    keys.insert(newIndex, key);
+    scriptModelMap
+        .assignAll({for (final k in keys) k: scriptModelMap[k]!});
+    _saveOrder();
   }
 }
