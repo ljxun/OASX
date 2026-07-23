@@ -6,6 +6,7 @@ import 'package:oasx/translation/i18n_content.dart';
 import 'package:oasx/utils/platform_utils.dart';
 import 'package:oasx/views/home/home_controller.dart';
 import 'package:oasx/views/nav/view_nav.dart';
+import 'package:window_manager/window_manager.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
@@ -63,38 +64,32 @@ class HomeView extends GetView<HomeController> {
               ? _buildMultiSelectAppBar(context)
               : null,
           floatingActionButton: _buildFloatingActionButtons(context),
-          body: Column(
-            children: [
-              if (!controller.isSelectionModeActive.value)
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.tune),
-                        tooltip: I18n.layout_settings.tr,
-                        onPressed: () => _showLayoutSettings(context),
-                      ),
-                    ],
-                  ),
+          body: Obx(() {
+            final topArea = SizedBox(
+              height: controller.topMargin.value,
+              width: double.infinity,
+            );
+            return Column(
+              children: [
+                // 桌面端：顶部空白区域可拖动窗口
+                PlatformUtils.isDesktop
+                    ? DragToMoveArea(child: topArea)
+                    : topArea,
+                Expanded(
+                  child:
+                      controller.displayMode.value == HomeDisplayMode.list
+                          ? _buildListView(context)
+                          : _buildGridView(context),
                 ),
-              Expanded(
-                child: Obx(
-                  () => controller.displayMode.value == HomeDisplayMode.list
-                      ? _buildListView(context)
-                      : _buildGridView(context),
-                ),
-              ),
-            ],
-          ),
+              ],
+            );
+          }),
         ));
   }
 
   Widget _buildGridView(BuildContext context) {
     final scriptModels = controller.scriptModels;
-    final horizontalPadding = PlatformUtils.isMobile ? 16.0 : 48.0;
+    final horizontalPadding = controller.horizontalMargin.value;
     final columns = controller.columns.value;
     final cardWidth = controller.cardWidth.value;
     final cardHeight = controller.cardHeight.value;
@@ -153,8 +148,7 @@ class HomeView extends GetView<HomeController> {
 
   Widget _buildListView(BuildContext context) {
     final scriptModels = controller.scriptModels;
-    final horizontalPadding = PlatformUtils.isMobile ? 16.0 : 48.0;
-    final cardHeight = controller.cardHeight.value;
+    final horizontalPadding = controller.horizontalMargin.value;
 
     return ReorderableListView.builder(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -168,121 +162,251 @@ class HomeView extends GetView<HomeController> {
         final scriptModel = scriptModels[index];
         return Padding(
           key: ValueKey(scriptModel.name),
-          padding: const EdgeInsets.only(bottom: 10),
-          child: SizedBox(
-            height: cardHeight,
-            child: Row(
-              children: [
-                ReorderableDragStartListener(
-                  index: index,
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Icon(Icons.drag_indicator),
-                  ),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            children: [
+              ReorderableDragStartListener(
+                index: index,
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Icon(Icons.drag_indicator),
                 ),
-                Expanded(child: _buildCard(context, scriptModel)),
-              ],
-            ),
+              ),
+              Expanded(child: _buildRowCard(context, scriptModel)),
+            ],
           ),
         );
       },
     );
   }
 
+  // 行模式：名称、任务状态、时间在同一行显示
+  Widget _buildRowCard(BuildContext context, ScriptModel scriptModel) {
+    final titleStyle =
+        Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 16);
+    final subtitleStyle =
+        Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13);
+    final isSelected = controller.selectedScripts.contains(scriptModel.name);
+
+    return GestureDetector(
+      onTap: () => _onCardTap(scriptModel),
+      onSecondaryTapDown: (details) {
+        if (PlatformUtils.isMobile) return;
+        _showContextMenu(context, details.globalPosition, scriptModel.name);
+      },
+      onLongPress: () {
+        if (PlatformUtils.isMobile) {
+          controller.enterSelectionMode();
+          controller.toggleSelection(scriptModel.name);
+        }
+      },
+      child: Obx(
+        () => Card(
+          elevation: isSelected ? 8.0 : 1.0,
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
+              : null,
+          clipBehavior: Clip.antiAlias,
+          margin: EdgeInsets.zero,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        scriptModel.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: titleStyle,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        _getTaskStatusAndName(scriptModel),
+                        overflow: TextOverflow.ellipsis,
+                        style: subtitleStyle,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: _buildRowTimeInfo(scriptModel, subtitleStyle),
+                    ),
+                    if (isSelected)
+                      Icon(Icons.check_circle,
+                          color: Theme.of(context).colorScheme.primary)
+                    else if (!controller.isSelectionModeActive.value)
+                      IconButton(
+                        icon: const Icon(Icons.power_settings_new_rounded),
+                        color: switch (scriptModel.state.value) {
+                          ScriptState.running => Colors.green,
+                          ScriptState.warning => Colors.amber,
+                          _ => null,
+                        },
+                        onPressed: () =>
+                            controller.toggleScript(scriptModel.name),
+                      ),
+                  ],
+                ),
+              ),
+              _buildStatusLine(scriptModel),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRowTimeInfo(ScriptModel scriptModel, TextStyle? style) {
+    final onlyWaiting = scriptModel.waitingTaskList.isNotEmpty &&
+        scriptModel.runningTask.value.taskName.value.isEmpty &&
+        scriptModel.pendingTaskList.isEmpty;
+    if (!onlyWaiting) return const SizedBox.shrink();
+    if (scriptModel.state.value == ScriptState.running) {
+      return _CountdownTimer(
+        targetTime: scriptModel.waitingTaskList.first.nextRun.value,
+        style: style,
+      );
+    }
+    return Text(
+      scriptModel.waitingTaskList.first.nextRun.value,
+      style: style,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  void _onCardTap(ScriptModel scriptModel) {
+    if (controller.isSelectionModeActive.value) {
+      controller.toggleSelection(scriptModel.name);
+    } else {
+      final navController = Get.find<NavCtrl>();
+      final scriptIndex =
+          navController.navNameList.indexOf(scriptModel.name);
+      if (scriptIndex != -1) {
+        navController.switchScript(scriptIndex);
+      }
+    }
+  }
+
   void _showLayoutSettings(BuildContext context) {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      showDragHandle: true,
       builder: (context) {
-        return SafeArea(
-          child: Obx(() {
-            final isGrid =
-                controller.displayMode.value == HomeDisplayMode.grid;
-            return ListView(
-              shrinkWrap: true,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(I18n.layout_settings.tr,
-                        style: Theme.of(context).textTheme.titleMedium),
-                    TextButton.icon(
-                      icon: const Icon(Icons.restart_alt, size: 18),
-                      label: Text(I18n.restore_default.tr),
-                      onPressed: controller.resetLayout,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: Text(I18n.display_mode.tr)),
-                    SegmentedButton<HomeDisplayMode>(
-                      segments: [
-                        ButtonSegment(
-                          value: HomeDisplayMode.grid,
-                          icon: const Icon(Icons.grid_view_rounded),
-                          label: Text(I18n.grid_view.tr),
-                        ),
-                        ButtonSegment(
-                          value: HomeDisplayMode.list,
-                          icon: const Icon(Icons.view_agenda_outlined),
-                          label: Text(I18n.list_view.tr),
-                        ),
-                      ],
-                      selected: {controller.displayMode.value},
-                      onSelectionChanged: (v) {
-                        controller.displayMode.value = v.first;
-                        controller.saveLayout();
-                      },
-                    ),
-                  ],
-                ),
-                if (isGrid) ...[
+        return Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Obx(() {
+              final isGrid =
+                  controller.displayMode.value == HomeDisplayMode.grid;
+              return ListView(
+                shrinkWrap: true,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(I18n.layout_settings.tr,
+                          style: Theme.of(context).textTheme.titleMedium),
+                      TextButton.icon(
+                        icon: const Icon(Icons.restart_alt, size: 18),
+                        label: Text(I18n.restore_default.tr),
+                        onPressed: controller.resetLayout,
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: Text(I18n.columns_per_row.tr)),
-                      DropdownButton<int>(
-                        value: controller.columns.value,
-                        items: [
-                          DropdownMenuItem(
-                              value: 0, child: Text(I18n.auto_fit.tr)),
-                          for (var i = 1; i <= 6; i++)
-                            DropdownMenuItem(value: i, child: Text('$i')),
+                      Expanded(child: Text(I18n.display_mode.tr)),
+                      SegmentedButton<HomeDisplayMode>(
+                        segments: [
+                          ButtonSegment(
+                            value: HomeDisplayMode.grid,
+                            icon: const Icon(Icons.grid_view_rounded),
+                            label: Text(I18n.grid_view.tr),
+                          ),
+                          ButtonSegment(
+                            value: HomeDisplayMode.list,
+                            icon: const Icon(Icons.view_agenda_outlined),
+                            label: Text(I18n.list_view.tr),
+                          ),
                         ],
-                        onChanged: (v) {
-                          if (v == null) return;
-                          controller.columns.value = v;
+                        selected: {controller.displayMode.value},
+                        onSelectionChanged: (v) {
+                          controller.displayMode.value = v.first;
                           controller.saveLayout();
                         },
                       ),
                     ],
                   ),
-                  if (controller.columns.value == 0)
+                  if (isGrid) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(child: Text(I18n.columns_per_row.tr)),
+                        DropdownButton<int>(
+                          value: controller.columns.value,
+                          items: [
+                            DropdownMenuItem(
+                                value: 0, child: Text(I18n.auto_fit.tr)),
+                            for (var i = 1; i <= 6; i++)
+                              DropdownMenuItem(value: i, child: Text('$i')),
+                          ],
+                          onChanged: (v) {
+                            if (v == null) return;
+                            controller.columns.value = v;
+                            controller.saveLayout();
+                          },
+                        ),
+                      ],
+                    ),
+                    if (controller.columns.value == 0)
+                      _buildSliderTile(
+                        context,
+                        label: I18n.card_width.tr,
+                        value: controller.cardWidth.value,
+                        min: 200,
+                        max: 600,
+                        onChanged: (v) => controller.cardWidth.value = v,
+                        onChangeEnd: (_) => controller.saveLayout(),
+                      ),
                     _buildSliderTile(
                       context,
-                      label: I18n.card_width.tr,
-                      value: controller.cardWidth.value,
-                      min: 200,
-                      max: 600,
-                      onChanged: (v) => controller.cardWidth.value = v,
+                      label: I18n.card_height.tr,
+                      value: controller.cardHeight.value,
+                      min: 100,
+                      max: 400,
+                      onChanged: (v) => controller.cardHeight.value = v,
                       onChangeEnd: (_) => controller.saveLayout(),
                     ),
+                  ],
+                  _buildSliderTile(
+                    context,
+                    label: I18n.top_margin.tr,
+                    value: controller.topMargin.value,
+                    min: 0,
+                    max: 100,
+                    onChanged: (v) => controller.topMargin.value = v,
+                    onChangeEnd: (_) => controller.saveLayout(),
+                  ),
+                  _buildSliderTile(
+                    context,
+                    label: I18n.horizontal_margin.tr,
+                    value: controller.horizontalMargin.value,
+                    min: 0,
+                    max: 300,
+                    onChanged: (v) => controller.horizontalMargin.value = v,
+                    onChangeEnd: (_) => controller.saveLayout(),
+                  ),
                 ],
-                _buildSliderTile(
-                  context,
-                  label: I18n.card_height.tr,
-                  value: controller.cardHeight.value,
-                  min: 100,
-                  max: 400,
-                  onChanged: (v) => controller.cardHeight.value = v,
-                  onChangeEnd: (_) => controller.saveLayout(),
-                ),
-              ],
-            );
-          }),
+              );
+            }),
+          ),
         );
       },
     );
@@ -342,36 +466,83 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget _buildFloatingActionButtons(BuildContext context) {
-    return Obx(() => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: controller.isSelectionModeActive.value
-              ? []
-              : [
-                  FloatingActionButton(
-                    heroTag: 'add_config',
-                    onPressed: () => controller.addConfig(context),
-                    child: const Icon(Icons.add),
-                  ),
-                  const SizedBox(height: 10),
-                  FloatingActionButton(
-                    heroTag: 'multi_select',
-                    onPressed: controller.enterSelectionMode,
-                    child: const Icon(Icons.check_box_outlined),
-                  ),
-                  const SizedBox(height: 10),
-                  FloatingActionButton(
-                    heroTag: 'refresh',
-                    onPressed: () => controller.reconnect(),
-                    child: const Icon(Icons.refresh),
-                  ),
-                  const SizedBox(height: 10),
-                  FloatingActionButton(
-                    heroTag: 'settings',
-                    onPressed: () => Get.toNamed('/settings'),
-                    child: const Icon(Icons.settings),
-                  ),
-                ],
-        ));
+    return Obx(() {
+      if (controller.isSelectionModeActive.value) {
+        return const SizedBox.shrink();
+      }
+      final expanded = controller.isFabExpanded.value;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            alignment: Alignment.bottomCenter,
+            child: expanded
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FloatingActionButton.small(
+                        heroTag: 'add_config',
+                        tooltip: I18n.config_add.tr,
+                        onPressed: () => controller.addConfig(context),
+                        child: const Icon(Icons.add),
+                      ),
+                      const SizedBox(height: 10),
+                      FloatingActionButton.small(
+                        heroTag: 'multi_select',
+                        tooltip: '多选',
+                        onPressed: controller.enterSelectionMode,
+                        child: const Icon(Icons.check_box_outlined),
+                      ),
+                      const SizedBox(height: 10),
+                      FloatingActionButton.small(
+                        heroTag: 'layout_settings',
+                        tooltip: I18n.layout_settings.tr,
+                        onPressed: () => _showLayoutSettings(context),
+                        child: const Icon(Icons.tune),
+                      ),
+                      const SizedBox(height: 10),
+                      Obx(() => FloatingActionButton.small(
+                            heroTag: 'refresh',
+                            tooltip: I18n.refresh.tr,
+                            onPressed: controller.isRefreshing.value
+                                ? null
+                                : () => controller.reconnect(),
+                            child: controller.isRefreshing.value
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2.5),
+                                  )
+                                : const Icon(Icons.refresh),
+                          )),
+                      const SizedBox(height: 10),
+                      FloatingActionButton.small(
+                        heroTag: 'settings',
+                        tooltip: I18n.setting.tr,
+                        onPressed: () => Get.toNamed('/settings'),
+                        child: const Icon(Icons.settings),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+          FloatingActionButton(
+            heroTag: 'fab_toggle',
+            onPressed: () => controller.isFabExpanded.toggle(),
+            child: AnimatedRotation(
+              duration: const Duration(milliseconds: 200),
+              turns: expanded ? 0.125 : 0,
+              child: Icon(expanded ? Icons.close : Icons.menu),
+            ),
+          ),
+        ],
+      );
+    });
   }
 
   Widget _buildCard(BuildContext context, ScriptModel scriptModel,
@@ -383,19 +554,7 @@ class HomeView extends GetView<HomeController> {
     final isSelected = controller.selectedScripts.contains(scriptModel.name);
 
     return GestureDetector(
-      onTap: () {
-        if (controller.isSelectionModeActive.value) {
-          controller.toggleSelection(scriptModel.name);
-        } else {
-          // 点击卡片进入对应的配置页面（Overview）
-          // 需要在 NavCtrl 中切换选中的脚本
-          final navController = Get.find<NavCtrl>();
-          final scriptIndex = navController.navNameList.value.indexOf(scriptModel.name);
-          if (scriptIndex != -1) {
-            navController.switchScript(scriptIndex);
-          }
-        }
-      },
+      onTap: () => _onCardTap(scriptModel),
       onSecondaryTapDown: (details) {
         if (PlatformUtils.isMobile) return;
         _showContextMenu(context, details.globalPosition, scriptModel.name);

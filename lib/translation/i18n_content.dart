@@ -269,4 +269,8 @@ class I18n {
   static const String card_width = 'Card width';
   static const String card_height = 'Card height';
   static const String restore_default = 'Restore default';
+  static const String top_margin = 'Top margin';
+  static const String horizontal_margin = 'Horizontal margin';
+  static const String refresh = 'Refresh';
+  static const String refresh_done = 'Refresh done';
 }

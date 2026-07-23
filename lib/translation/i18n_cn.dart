@@ -112,6 +112,10 @@ final Map<String, String> _cn_ui = {
   I18n.card_width: '卡片宽度',
   I18n.card_height: '卡片高度',
   I18n.restore_default: '恢复默认',
+  I18n.top_margin: '上边距',
+  I18n.horizontal_margin: '左右边距',
+  I18n.refresh: '刷新',
+  I18n.refresh_done: '刷新完成',
 };
 
 final Map<String, String> _cn_menu = {

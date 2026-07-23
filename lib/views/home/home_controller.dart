@@ -24,11 +24,18 @@ class HomeController extends GetxController {
 
   static double get _defaultCardWidth => PlatformUtils.isMobile ? 400.0 : 350.0;
   static const double _defaultCardHeight = 200.0;
+  static double get _defaultHMargin => PlatformUtils.isMobile ? 16.0 : 48.0;
+  static const double _defaultTopMargin = 8.0;
 
   final displayMode = HomeDisplayMode.grid.obs;
   final columns = 0.obs; // 0 = 按卡片宽度自动计算
   late final cardWidth = _defaultCardWidth.obs;
   final cardHeight = _defaultCardHeight.obs;
+  final topMargin = _defaultTopMargin.obs;
+  late final horizontalMargin = _defaultHMargin.obs;
+
+  final isFabExpanded = false.obs;
+  final isRefreshing = false.obs;
 
   @override
   void onInit() {
@@ -47,6 +54,10 @@ class HomeController extends GetxController {
       cardWidth.value = (map['cardWidth'] as num?)?.toDouble() ?? cardWidth.value;
       cardHeight.value =
           (map['cardHeight'] as num?)?.toDouble() ?? cardHeight.value;
+      topMargin.value =
+          (map['topMargin'] as num?)?.toDouble() ?? topMargin.value;
+      horizontalMargin.value =
+          (map['hMargin'] as num?)?.toDouble() ?? horizontalMargin.value;
     } catch (_) {}
   }
 
@@ -58,6 +69,8 @@ class HomeController extends GetxController {
           'columns': columns.value,
           'cardWidth': cardWidth.value,
           'cardHeight': cardHeight.value,
+          'topMargin': topMargin.value,
+          'hMargin': horizontalMargin.value,
         }));
   }
 
@@ -66,6 +79,8 @@ class HomeController extends GetxController {
     columns.value = 0;
     cardWidth.value = _defaultCardWidth;
     cardHeight.value = _defaultCardHeight;
+    topMargin.value = _defaultTopMargin;
+    horizontalMargin.value = _defaultHMargin;
     saveLayout();
   }
 
@@ -245,11 +260,19 @@ class HomeController extends GetxController {
   }
 
   Future<void> reconnect() async {
-    Get.snackbar('提示', '正在重新连接...',
-        duration: const Duration(milliseconds: 2000));
+    if (isRefreshing.value) return;
+    isRefreshing.value = true;
     final wsService = Get.find<WebSocketService>();
-    for (var name in _scriptService.scriptModelMap.keys) {
-      wsService.connect(name: name, force: true);
+    try {
+      await Future.wait(_scriptService.scriptModelMap.keys
+          .map((name) => wsService.connect(name: name, force: true)));
+      Get.snackbar(I18n.tip.tr, I18n.refresh_done.tr,
+          duration: const Duration(milliseconds: 1500));
+    } catch (_) {
+      Get.snackbar(I18n.tip.tr, I18n.network_error.tr,
+          duration: const Duration(milliseconds: 1500));
+    } finally {
+      isRefreshing.value = false;
     }
   }
 }
